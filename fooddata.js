@@ -53,6 +53,8 @@ const FOOD_DATABASE = [
     per100:{ calories:155, protein:12.6, carbs:1.1, fat:10.6 }, defaultQty:50 },
   { id:'egg-white', name:'Egg White', category:'Eggs', type:'veg', unit:'g',
     per100:{ calories:52, protein:10.9, carbs:0.7, fat:0.2 }, defaultQty:33 },
+  { id:'tofu', name:'Tofu', category:'Dairy', type:'veg', unit:'g',
+    per100:{ calories:147, protein:15.4, carbs:1.9, fat:8.7 }, defaultQty:33 },
 
   // ── BREAD & BAKERY ──
   { id:'bread-white', name:'Bread Slices (White)', category:'Grains & Bakery', type:'veg', unit:'g',

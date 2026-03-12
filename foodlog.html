@@ -1,268 +1,178 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23E50914'/><text x='50' y='68' font-size='45' font-weight='bold' text-anchor='middle' fill='white' font-family='serif'>NK</text></svg>"
-    />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Food Log — NK's Fit Journal</title>
-    <link rel="stylesheet" href="main.css" />
-    <link rel="stylesheet" href="components.css" />
-    <style>
-      .foodlog-grid {
-        display: grid;
-        grid-template-columns: 1fr 360px;
-        gap: 24px;
-        align-items: start;
-      }
-      .totals-strip {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-        margin-bottom: 24px;
-      }
-      .total-chip {
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-md);
-        padding: 14px 16px;
-        text-align: center;
-        backdrop-filter: blur(8px);
-      }
-      .total-val {
-        font-family: var(--heading-font);
-        font-size: 1.4rem;
-        font-weight: 700;
-      }
-      .total-lbl {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--text-muted);
-        margin-top: 3px;
-      }
-      .search-panel {
-        position: sticky;
-        top: calc(var(--nav-height) + 16px);
-      }
-      .search-results-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        max-height: 60vh;
-        overflow-y: auto;
-        margin-top: 16px;
-      }
-      @media (max-width: 900px) {
-        .foodlog-grid {
-          grid-template-columns: 1fr;
-        }
-        .search-panel {
-          position: relative;
-          top: auto;
-        }
-      }
-      @media (max-width: 600px) {
-        .totals-strip {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <canvas id="bg-canvas"></canvas>
-    <div class="site-wrapper">
-      <nav class="navbar">
-        <div class="navbar-inner">
-          <a href="index.html" class="nav-brand"
-            ><div class="nav-logo">NK</div>
-            <span class="nav-brand-name"><span>NK's</span> Fit Journal</span></a
-          >
-          <ul class="nav-links">
-            <li><a href="index.html" class="nav-link">🏠 Home</a></li>
-            <li><a href="dashboard.html" class="nav-link">📊 Dashboard</a></li>
-            <li><a href="foodlog.html" class="nav-link">🍽️ Food Log</a></li>
-            <li><a href="database.html" class="nav-link">🗄️ Database</a></li>
-            <li><a href="progress.html" class="nav-link">📈 Progress</a></li>
-            <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
-          </ul>
-          <div class="nav-actions">
-            <button class="theme-toggle">
-              <div class="theme-toggle-track">
-                <div class="theme-toggle-thumb">
-                  <span class="theme-toggle-sun">☀️</span
-                  ><span class="theme-toggle-moon">🌙</span>
-                </div>
-              </div>
-            </button>
-            <button class="btn-logout" onclick="Auth.logout()" title="Logout">
-              🚪 Logout
-            </button>
-            <button class="nav-hamburger" id="nav-hamburger">
-              <span></span><span></span><span></span>
-            </button>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Food Log — NK's Fit Journal</title>
+  <link rel="stylesheet" href="main.css"/>
+  <link rel="stylesheet" href="components.css"/>
+  <style>
+    .foodlog-grid { display:grid; grid-template-columns:1fr 360px; gap:24px; align-items:start; }
+    .totals-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+    .total-chip { background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px 16px; text-align:center; backdrop-filter:blur(8px); }
+    .total-val { font-family:var(--heading-font); font-size:1.4rem; font-weight:700; }
+    .total-lbl { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-top:3px; }
+    .search-panel { position:sticky; top:calc(var(--nav-height) + 16px); }
+    .search-results-list { display:flex; flex-direction:column; gap:8px; max-height:60vh; overflow-y:auto; margin-top:16px; }
+    @media(max-width:900px) { .foodlog-grid{grid-template-columns:1fr} .search-panel{position:relative;top:auto} }
+    @media(max-width:600px) { .totals-strip{grid-template-columns:repeat(2,1fr)} }
+  </style>
+  <style>
+    .date-nav { display:flex; align-items:center; gap:8px; }
+    .date-nav-btn {
+      width:32px; height:32px; border-radius:50%; border:1.5px solid var(--border-color);
+      background:var(--bg-card); color:var(--text-primary); font-size:1.3rem;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:all 0.15s; line-height:1;
+    }
+    .date-nav-btn:hover { background:var(--accent-primary); color:white; border-color:var(--accent-primary); }
+    .date-nav-btn:disabled { opacity:0.35; cursor:not-allowed; }
+    .date-nav-btn:disabled:hover { background:var(--bg-card); color:var(--text-primary); border-color:var(--border-color); }
+    .date-chip-clickable { cursor:pointer; position:relative; user-select:none; }
+    .date-chip-clickable:hover { background:var(--accent-primary); color:white; }
+    .past-day-banner {
+      background: linear-gradient(135deg, rgba(229,9,20,0.06), rgba(255,107,0,0.06));
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px; padding: 10px 16px;
+      font-size: 0.82rem; color: var(--text-muted);
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="site-wrapper">
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="nav-brand"><div class="nav-logo">NK</div><span class="nav-brand-name"><span>NK's</span> Fit Journal</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">🏠 Home</a></li>
+        <li><a href="dashboard.html" class="nav-link">📊 Dashboard</a></li>
+        <li><a href="foodlog.html" class="nav-link">🍽️ Food Log</a></li>
+        <li><a href="database.html" class="nav-link">🗄️ Database</a></li>
+        <li><a href="progress.html" class="nav-link">📈 Progress</a></li>
+        <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle"><div class="theme-toggle-track"><div class="theme-toggle-thumb"><span class="theme-toggle-sun">☀️</span><span class="theme-toggle-moon">🌙</span></div></div></button>
+        <button class="btn-logout" onclick="Auth.logout()" title="Logout">🚪 Logout</button>
+        <button class="nav-hamburger" id="nav-hamburger"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+  <div class="nav-mobile" id="nav-mobile">
+    <ul class="nav-links">
+      <li><a href="index.html" class="nav-link">🏠 Home</a></li>
+      <li><a href="dashboard.html" class="nav-link">📊 Dashboard</a></li>
+      <li><a href="foodlog.html" class="nav-link active">🍽️ Food Log</a></li>
+      <li><a href="database.html" class="nav-link">🗄️ Database</a></li>
+      <li><a href="progress.html" class="nav-link">📈 Progress</a></li>
+      <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="container">
+      <div class="page-header">
+        <div>
+          <div class="date-nav mb-8">
+            <button class="date-nav-btn" id="date-prev" title="Previous day">&#8249;</button>
+            <label class="date-chip date-chip-clickable" title="Pick a date">
+              📅 <span id="log-date"></span>
+              <input type="date" id="date-picker" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none"/>
+            </label>
+            <button class="date-nav-btn" id="date-next" title="Next day" id="date-next">&#8250;</button>
           </div>
+          <h1 class="page-title">Food Log</h1>
+          <p class="page-subtitle"><span id="log-count">0 items</span> logged <span id="log-day-label">today</span></p>
         </div>
-      </nav>
-      <div class="nav-mobile" id="nav-mobile">
-        <ul class="nav-links">
-          <li><a href="index.html" class="nav-link">🏠 Home</a></li>
-          <li><a href="dashboard.html" class="nav-link">📊 Dashboard</a></li>
-          <li>
-            <a href="foodlog.html" class="nav-link active">🍽️ Food Log</a>
-          </li>
-          <li><a href="database.html" class="nav-link">🗄️ Database</a></li>
-          <li><a href="progress.html" class="nav-link">📈 Progress</a></li>
-          <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
-        </ul>
+        <a href="dashboard.html" class="btn btn-secondary">← Dashboard</a>
       </div>
 
-      <main>
-        <div class="container">
-          <div class="page-header">
-            <div>
-              <div class="date-chip mb-8">📅 <span id="log-date"></span></div>
-              <h1 class="page-title">Food Log</h1>
-              <p class="page-subtitle">
-                <span id="log-count">0 items</span> logged today
-              </p>
-            </div>
-            <a href="dashboard.html" class="btn btn-secondary">← Dashboard</a>
-          </div>
+      <!-- Daily Totals -->
+      <div class="totals-strip">
+        <div class="total-chip"><div class="total-val" id="log-total-calories" style="color:var(--accent-primary)">0 kcal</div><div class="total-lbl">Calories</div></div>
+        <div class="total-chip"><div class="total-val macro-protein" id="log-total-protein">0g</div><div class="total-lbl">Protein</div></div>
+        <div class="total-chip"><div class="total-val macro-carbs" id="log-total-carbs">0g</div><div class="total-lbl">Carbs</div></div>
+        <div class="total-chip"><div class="total-val macro-fat" id="log-total-fat">0g</div><div class="total-lbl">Fat</div></div>
+      </div>
 
-          <!-- Daily Totals -->
-          <div class="totals-strip">
-            <div class="total-chip">
-              <div
-                class="total-val"
-                id="log-total-calories"
-                style="color: var(--accent-primary)"
-              >
-                0 kcal
-              </div>
-              <div class="total-lbl">Calories</div>
-            </div>
-            <div class="total-chip">
-              <div class="total-val macro-protein" id="log-total-protein">
-                0g
-              </div>
-              <div class="total-lbl">Protein</div>
-            </div>
-            <div class="total-chip">
-              <div class="total-val macro-carbs" id="log-total-carbs">0g</div>
-              <div class="total-lbl">Carbs</div>
-            </div>
-            <div class="total-chip">
-              <div class="total-val macro-fat" id="log-total-fat">0g</div>
-              <div class="total-lbl">Fat</div>
-            </div>
-          </div>
-
-          <div class="foodlog-grid">
-            <!-- Left: Log -->
-            <div>
-              <div class="card">
-                <h3 style="margin-bottom: 16px">Today's Entries</h3>
-                <div
-                  id="food-log-entries"
-                  style="display: flex; flex-direction: column; gap: 8px"
-                ></div>
-              </div>
-            </div>
-
-            <!-- Right: Search & Add -->
-            <div class="search-panel">
-              <div class="card">
-                <h3 style="margin-bottom: 14px">➕ Add Food</h3>
-                <div class="search-wrap mb-16">
-                  <span class="search-icon">🔍</span>
-                  <input
-                    type="text"
-                    id="food-search"
-                    class="search-input"
-                    placeholder="Search foods..."
-                  />
-                </div>
-                <div class="filter-tabs mb-16">
-                  <button class="filter-tab active" data-filter="all">
-                    All
-                  </button>
-                  <button class="filter-tab" data-filter="veg">🌱 Veg</button>
-                  <button class="filter-tab" data-filter="nonveg">
-                    🍗 Non-Veg
-                  </button>
-                </div>
-                <div class="search-results-list" id="search-results"></div>
-              </div>
-            </div>
+      <div class="foodlog-grid">
+        <!-- Left: Log -->
+        <div>
+          <div class="card">
+            <h3 style="margin-bottom:16px">Today's Entries</h3>
+            <div id="food-log-entries" style="display:flex;flex-direction:column;gap:8px"></div>
           </div>
         </div>
-      </main>
-    </div>
 
-    <!-- Add Food Modal -->
-    <div class="modal-overlay" id="add-food-modal">
-      <div class="modal">
-        <div class="modal-header">
-          <h3 class="modal-title" id="modal-food-name">Food Name</h3>
-          <button class="modal-close">✕</button>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Quantity</label>
-          <div style="display: flex; gap: 10px; align-items: center">
-            <input
-              type="number"
-              id="modal-qty"
-              class="form-input"
-              min="1"
-              max="2000"
-              step="1"
-              style="flex: 1"
-            />
-            <span class="qty-unit" id="modal-unit">g</span>
+        <!-- Right: Search & Add -->
+        <div class="search-panel">
+          <div class="card">
+            <h3 style="margin-bottom:14px">➕ Add Food</h3>
+            <div class="search-wrap mb-16">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="food-search" class="search-input" placeholder="Search foods..."/>
+            </div>
+            <div class="filter-tabs mb-16">
+              <button class="filter-tab active" data-filter="all">All</button>
+              <button class="filter-tab" data-filter="veg">🌱 Veg</button>
+              <button class="filter-tab" data-filter="nonveg">🍗 Non-Veg</button>
+            </div>
+            <div class="search-results-list" id="search-results"></div>
           </div>
-        </div>
-        <div id="modal-preview"></div>
-        <div style="display: flex; gap: 10px; margin-top: 20px">
-          <button
-            class="btn btn-secondary w-full"
-            onclick="Modal.close('add-food-modal')"
-          >
-            Cancel
-          </button>
-          <button class="btn btn-primary w-full" id="add-food-btn">
-            ➕ Add to Log
-          </button>
         </div>
       </div>
     </div>
+  </main>
+</div>
 
-    <div id="toast-container" class="toast-container"></div>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="firebase-config.js"></script>
-    <script src="auth.js"></script>
-    <script src="app.js"></script>
-    <script src="animations.js"></script>
-    <script src="fooddata.js"></script>
-    <script src="foodlog.js"></script>
+<!-- Add Food Modal -->
+<div class="modal-overlay" id="add-food-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-food-name">Food Name</h3>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Quantity</label>
+      <div style="display:flex;gap:10px;align-items:center">
+        <input type="number" id="modal-qty" class="form-input" min="1" max="2000" step="1" style="flex:1"/>
+        <span class="qty-unit" id="modal-unit">g</span>
+      </div>
+    </div>
+    <div id="modal-preview"></div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-secondary w-full" onclick="Modal.close('add-food-modal')">Cancel</button>
+      <button class="btn btn-primary w-full" id="add-food-btn">➕ Add to Log</button>
+    </div>
+  </div>
+</div>
 
-    <script>
-      // Auth guard
-      (function () {
-        const user = Auth.requireAuth();
-        if (!user) return;
-        // Show username in navbar
-        const el = document.createElement("span");
-        el.style.cssText =
-          "font-size:0.82rem;color:var(--text-muted);font-weight:600;padding:0 8px";
-        el.textContent = "👤 " + user;
-        const actions = document.querySelector(".nav-actions");
-        if (actions) actions.insertBefore(el, actions.firstChild);
-      })();
-    </script>
-  </body>
+<div id="toast-container" class="toast-container"></div>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+  <script src="auth.js"></script>
+<script src="app.js"></script>
+<script src="animations.js"></script>
+<script src="fooddata.js"></script>
+<script src="foodlog.js"></script>
+
+<script>
+// Auth guard
+(function() {
+  const user = Auth.requireAuth();
+  if (!user) return;
+  // Show username in navbar
+  const el = document.createElement('span');
+  el.style.cssText = 'font-size:0.82rem;color:var(--text-muted);font-weight:600;padding:0 8px';
+  el.textContent = '👤 ' + user;
+  const actions = document.querySelector('.nav-actions');
+  if (actions) actions.insertBefore(el, actions.firstChild);
+})();
+</script>
+</body>
 </html>

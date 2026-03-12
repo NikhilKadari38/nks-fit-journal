@@ -1,22 +1,93 @@
 // ============================================
 // NK's Fit Journal — foodlog.js
-// Food Log: Add, view, delete food entries for today
+// Food Log: Add, view, delete food entries
 // ============================================
 
 const FoodLog = (() => {
-  let today, selectedFood = null, searchResults = [], currentFilter = 'all';
+  let activeDate, selectedFood = null, searchResults = [], currentFilter = 'all';
 
   const init = () => {
-    today = Utils.today();
-    const dateEl = document.getElementById('log-date');
-    if (dateEl) dateEl.textContent = Utils.formatDate(today);
+    activeDate = Utils.today();
+    renderDateNav();
     renderLog();
     bindSearch();
     bindAddFoodModal();
+    bindDateNav();
   };
 
+  // ── Date Navigation ──
+  const renderDateNav = () => {
+    const today = Utils.today();
+    const dateEl = document.getElementById('log-date');
+    const dayLabel = document.getElementById('log-day-label');
+    const nextBtn = document.getElementById('date-next');
+    const pickerEl = document.getElementById('date-picker');
+
+    if (dateEl) dateEl.textContent = Utils.formatDate(activeDate);
+    if (pickerEl) pickerEl.value = activeDate;
+    if (nextBtn) nextBtn.disabled = (activeDate >= today);
+
+    // Day label
+    if (dayLabel) {
+      if (activeDate === today) {
+        dayLabel.textContent = 'today';
+      } else {
+        const diff = Math.round((new Date(today) - new Date(activeDate)) / 86400000);
+        dayLabel.textContent = diff === 1 ? 'yesterday' : `on ${Utils.formatDate(activeDate)}`;
+      }
+    }
+
+    // Past day banner
+    const existing = document.getElementById('past-day-banner');
+    if (existing) existing.remove();
+    if (activeDate < today) {
+      const banner = document.createElement('div');
+      banner.id = 'past-day-banner';
+      banner.className = 'past-day-banner';
+      banner.innerHTML = `📖 <span>Viewing past log — <strong>${Utils.formatDate(activeDate)}</strong>. Adding food will log it to this date.</span>`;
+      const totalsStrip = document.querySelector('.totals-strip');
+      if (totalsStrip) totalsStrip.parentNode.insertBefore(banner, totalsStrip);
+    }
+  };
+
+  const bindDateNav = () => {
+    const today = Utils.today();
+
+    document.getElementById('date-prev')?.addEventListener('click', () => {
+      const d = new Date(activeDate);
+      d.setDate(d.getDate() - 1);
+      activeDate = d.toISOString().split('T')[0];
+      renderDateNav();
+      renderLog();
+    });
+
+    document.getElementById('date-next')?.addEventListener('click', () => {
+      if (activeDate >= today) return;
+      const d = new Date(activeDate);
+      d.setDate(d.getDate() + 1);
+      activeDate = d.toISOString().split('T')[0];
+      renderDateNav();
+      renderLog();
+    });
+
+    // Clicking the date chip opens the date picker
+    document.querySelector('.date-chip-clickable')?.addEventListener('click', () => {
+      const picker = document.getElementById('date-picker');
+      if (picker) picker.showPicker?.() || picker.click();
+    });
+
+    document.getElementById('date-picker')?.addEventListener('change', (e) => {
+      if (!e.target.value) return;
+      if (e.target.value > today) { Toast.info("Can't log future dates!"); return; }
+      activeDate = e.target.value;
+      renderDateNav();
+      renderLog();
+    });
+  };
+
+  // ── Render Log ──
   const renderLog = () => {
-    const entries = NKStorage.getFoodLog(today);
+    const entries = NKStorage.getFoodLog(activeDate);
     const container = document.getElementById('food-log-entries');
     const totals = entries.reduce((a, e) => {
       a.calories += e.calories || 0; a.protein += e.protein || 0;
@@ -38,8 +109,8 @@ const FoodLog = (() => {
     if (entries.length === 0) {
       container.innerHTML = `<div class="empty-state">
         <span class="empty-state-icon">🥗</span>
-        <div class="empty-state-title">Nothing logged yet</div>
-        <div class="empty-state-desc">Click "+ Add Food" to start logging your meals</div>
+        <div class="empty-state-title">Nothing logged</div>
+        <div class="empty-state-desc">${activeDate === Utils.today() ? 'Click "+ Add Food" to start logging your meals' : 'No food was logged on this day'}</div>
       </div>`;
       return;
     }
@@ -68,14 +139,14 @@ const FoodLog = (() => {
     container.querySelectorAll('[data-delete]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const id = btn.dataset.delete;
-        NKStorage.deleteFoodEntry(today, id);
+        NKStorage.deleteFoodEntry(activeDate, btn.dataset.delete);
         Toast.info('Entry removed');
         renderLog();
       });
     });
   };
 
+  // ── Search ──
   const bindSearch = () => {
     const searchEl = document.getElementById('food-search');
     const resultsEl = document.getElementById('search-results');
@@ -112,7 +183,6 @@ const FoodLog = (() => {
 
     searchEl.addEventListener('input', render);
 
-    // Filter tabs
     document.querySelectorAll('[data-filter]').forEach(tab => {
       tab.addEventListener('click', () => {
         currentFilter = tab.dataset.filter;
@@ -122,10 +192,10 @@ const FoodLog = (() => {
       });
     });
 
-    // Init with all foods shown
     render();
   };
 
+  // ── Add Food Modal ──
   const openAddModal = (food) => {
     selectedFood = food;
     const nameEl = document.getElementById('modal-food-name');
@@ -170,18 +240,16 @@ const FoodLog = (() => {
         type: selectedFood.type,
         ...macros
       };
-      NKStorage.addFoodEntry(today, entry);
+      NKStorage.addFoodEntry(activeDate, entry);
       Modal.close('add-food-modal');
       renderLog();
       Toast.success(`✅ ${selectedFood.name} added!`);
       selectedFood = null;
     });
 
-    // Open modal button
     const openBtn = document.getElementById('open-add-food');
     if (openBtn) openBtn.addEventListener('click', () => {
-      const searchEl = document.getElementById('food-search');
-      if (searchEl) searchEl.focus();
+      document.getElementById('food-search')?.focus();
     });
   };
 

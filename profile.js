@@ -31,6 +31,19 @@ const ProfilePage = (() => {
   const calcBMR = (weight, height, age) => Math.round(10*weight + 6.25*height - 5*age + 5);
 
   const loadProfile = () => {
+    // Set initials immediately from username while Firebase loads
+    const avatarEl = document.getElementById('avatar-initials');
+    if (avatarEl) {
+      const savedProfile = NKStorage.getProfile();
+      if (savedProfile?.name) {
+        const parts = savedProfile.name.trim().split(' ').filter(Boolean);
+        avatarEl.textContent = ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase() || '?';
+      } else {
+        // Fallback: use first 2 chars of username
+        const username = Auth.getCurrentUser() || 'NK';
+        avatarEl.textContent = username.substring(0, 2).toUpperCase();
+      }
+    }
     const profile = { ...DEFAULTS, ...NKStorage.getProfile() };
     const fields = ['name','dob','weight','height','goal-weight','dietary-pref','calories-rest','calories-workout','water-goal'];
     fields.forEach(f => {
@@ -46,6 +59,14 @@ const ProfilePage = (() => {
     const bmi = calcBMI(profile.weight, profile.height);
     const bmr = calcBMR(profile.weight, profile.height, age);
     const toGoal = Utils.round1(profile.weight - profile.goalWeight);
+
+    // Update avatar initials dynamically
+    const avatarEl = document.getElementById('avatar-initials');
+    if (avatarEl) {
+      const parts = (profile.name || Auth.getCurrentUser() || 'NK').trim().split(' ').filter(Boolean);
+      const initials = ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase() || 'NK';
+      avatarEl.textContent = initials;
+    }
 
     const fields = {
       'display-name': profile.name,

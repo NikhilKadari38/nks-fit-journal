@@ -1,495 +1,255 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23E50914'/><text x='50' y='68' font-size='45' font-weight='bold' text-anchor='middle' fill='white' font-family='serif'>NK</text></svg>"
-    />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard — NK's Fit Journal</title>
-    <link rel="stylesheet" href="main.css" />
-    <link rel="stylesheet" href="components.css" />
-    <style>
-      .dashboard-grid {
-        display: grid;
-        grid-template-columns: 1fr 340px;
-        gap: 24px;
-      }
-      .calorie-ring-wrap {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 28px;
-      }
-      .ring-container {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 16px;
-      }
-      .ring-center {
-        position: absolute;
-        text-align: center;
-      }
-      .ring-cal {
-        font-family: var(--heading-font);
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        line-height: 1;
-      }
-      .ring-label {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--text-muted);
-        margin-top: 3px;
-      }
-      .ring-goal {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-        margin-top: 8px;
-      }
-      .ring-goal span {
-        font-weight: 700;
-        color: var(--accent-primary);
-      }
-      .cal-remaining {
-        text-align: center;
-        padding: 10px 24px;
-        background: var(--border-color);
-        border-radius: var(--radius-pill);
-        display: inline-flex;
-        gap: 8px;
-        align-items: center;
-      }
-      .macro-section {
-        padding: 20px 24px;
-      }
-      .macro-item {
-        margin-bottom: 14px;
-      }
-      .macro-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 6px;
-      }
-      .macro-name {
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-      .macro-gram {
-        font-size: 0.8rem;
-        font-weight: 600;
-      }
-      .log-scroll {
-        max-height: 380px;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 4px 2px;
-      }
-      @media (max-width: 900px) {
-        .dashboard-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <canvas id="bg-canvas"></canvas>
-    <div class="site-wrapper">
-      <nav class="navbar">
-        <div class="navbar-inner">
-          <a href="index.html" class="nav-brand">
-            <div class="nav-logo">NK</div>
-            <span class="nav-brand-name"><span>NK's</span> Fit Journal</span>
-          </a>
-          <ul class="nav-links">
-            <li><a href="index.html" class="nav-link">🏠 Home</a></li>
-            <li><a href="dashboard.html" class="nav-link">📊 Dashboard</a></li>
-            <li><a href="foodlog.html" class="nav-link">🍽️ Food Log</a></li>
-            <li><a href="database.html" class="nav-link">🗄️ Database</a></li>
-            <li><a href="progress.html" class="nav-link">📈 Progress</a></li>
-            <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
-          </ul>
-          <div class="nav-actions">
-            <button class="theme-toggle">
-              <div class="theme-toggle-track">
-                <div class="theme-toggle-thumb">
-                  <span class="theme-toggle-sun">☀️</span
-                  ><span class="theme-toggle-moon">🌙</span>
-                </div>
-              </div>
-            </button>
-            <button class="btn-logout" onclick="Auth.logout()" title="Logout">
-              🚪 Logout
-            </button>
-            <button class="nav-hamburger" id="nav-hamburger">
-              <span></span><span></span><span></span>
-            </button>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — NK's Fit Journal</title>
+  <link rel="stylesheet" href="main.css"/>
+  <link rel="stylesheet" href="components.css"/>
+  <style>
+    .dashboard-grid { display:grid; grid-template-columns:1fr 340px; gap:24px; }
+    .calorie-ring-wrap { display:flex; flex-direction:column; align-items:center; padding:28px; }
+    .ring-container { position:relative; display:flex; align-items:center; justify-content:center; margin-bottom:16px; }
+    .ring-center { position:absolute; text-align:center; }
+    .ring-cal { font-family:var(--heading-font); font-size:2.2rem; font-weight:700; color:var(--text-primary); line-height:1; }
+    .ring-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); margin-top:3px; }
+    .ring-goal { font-size:0.85rem; color:var(--text-muted); margin-top:8px; }
+    .ring-goal span { font-weight:700; color:var(--accent-primary); }
+    .cal-remaining { text-align:center; padding:10px 24px; background:var(--border-color); border-radius:var(--radius-pill); display:inline-flex; gap:8px; align-items:center; }
+    .macro-section { padding:20px 24px; }
+    .macro-item { margin-bottom:14px; }
+    .macro-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+    .macro-name { font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+    .macro-gram { font-size:0.8rem; font-weight:600; }
+    .log-scroll { max-height:380px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:4px 2px; }
+    @media(max-width:900px) { .dashboard-grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="site-wrapper">
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="nav-brand">
+        <div class="nav-logo">NK</div>
+        <span class="nav-brand-name"><span>NK's</span> Fit Journal</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">🏠 Home</a></li>
+        <li><a href="dashboard.html" class="nav-link">📊 Dashboard</a></li>
+        <li><a href="foodlog.html" class="nav-link">🍽️ Food Log</a></li>
+        <li><a href="database.html" class="nav-link">🗄️ Database</a></li>
+        <li><a href="progress.html" class="nav-link">📈 Progress</a></li>
+        <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle"><div class="theme-toggle-track"><div class="theme-toggle-thumb"><span class="theme-toggle-sun">☀️</span><span class="theme-toggle-moon">🌙</span></div></div></button>
+        <button class="btn-logout" onclick="Auth.logout()" title="Logout">🚪 Logout</button>
+        <button class="nav-hamburger" id="nav-hamburger"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+  <div class="nav-mobile" id="nav-mobile">
+    <ul class="nav-links">
+      <li><a href="index.html" class="nav-link">🏠 Home</a></li>
+      <li><a href="dashboard.html" class="nav-link">📊 Dashboard</a></li>
+      <li><a href="foodlog.html" class="nav-link">🍽️ Food Log</a></li>
+      <li><a href="database.html" class="nav-link">🗄️ Database</a></li>
+      <li><a href="progress.html" class="nav-link">📈 Progress</a></li>
+      <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="container">
+      <!-- Header -->
+      <div class="page-header">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+            <div class="date-chip">📅 <span id="today-date">Today</span></div>
+            <div class="date-chip" id="day-chip">⚡ <span id="today-day"></span></div>
           </div>
+          <h1 class="page-title">Dashboard</h1>
+          <p class="page-subtitle">Your daily nutrition overview</p>
         </div>
-      </nav>
-      <div class="nav-mobile" id="nav-mobile">
-        <ul class="nav-links">
-          <li><a href="index.html" class="nav-link">🏠 Home</a></li>
-          <li><a href="dashboard.html" class="nav-link">📊 Dashboard</a></li>
-          <li><a href="foodlog.html" class="nav-link">🍽️ Food Log</a></li>
-          <li><a href="database.html" class="nav-link">🗄️ Database</a></li>
-          <li><a href="progress.html" class="nav-link">📈 Progress</a></li>
-          <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
-        </ul>
+        <a href="foodlog.html" class="btn btn-primary">🍽️ Log Food</a>
       </div>
 
-      <main>
-        <div class="container">
-          <!-- Header -->
-          <div class="page-header">
-            <div>
-              <div
-                style="
-                  display: flex;
-                  align-items: center;
-                  gap: 10px;
-                  margin-bottom: 6px;
-                "
-              >
-                <div class="date-chip">
-                  📅 <span id="today-date">Today</span>
-                </div>
-                <div class="date-chip" id="day-chip">
-                  ⚡ <span id="today-day"></span>
+      <!-- Workout Toggle -->
+      <div class="workout-toggle-card mb-24 anim-fade-in">
+        <div class="workout-toggle-info">
+          <span class="workout-toggle-icon">🏋️</span>
+          <div>
+            <div class="workout-toggle-title">Day Type</div>
+            <div class="workout-toggle-sub">Affects your daily calorie goal</div>
+          </div>
+        </div>
+        <div class="toggle-group">
+          <button class="toggle-btn" id="workout-toggle-btn" data-workout="false"><span id="workout-toggle-label">😴 Rest Day</span></button>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Left Column -->
+        <div style="display:flex;flex-direction:column;gap:20px">
+
+          <!-- Calorie Ring -->
+          <div class="card anim-fade-in">
+            <div class="calorie-ring-wrap">
+              <div class="ring-container">
+                <canvas id="macro-canvas" width="200" height="200"></canvas>
+                <div class="ring-center">
+                  <div class="ring-cal" id="cal-eaten">0</div>
+                  <div class="ring-label">kcal eaten</div>
                 </div>
               </div>
-              <h1 class="page-title">Dashboard</h1>
-              <p class="page-subtitle">Your daily nutrition overview</p>
+              <div class="ring-goal">Goal: <span id="cal-goal-label">1,462</span> kcal &nbsp;|&nbsp; Remaining: <span id="cal-remaining">1,462</span> kcal</div>
             </div>
-            <a href="foodlog.html" class="btn btn-primary">🍽️ Log Food</a>
+            <!-- Macro Bars -->
+            <div class="macro-section" style="border-top:1px solid var(--border-color);padding-top:20px">
+              <div class="macro-item">
+                <div class="macro-header">
+                  <span class="macro-name macro-protein">💪 Protein</span>
+                  <span class="macro-gram" id="val-protein" style="color:#3B82F6">0g / 136g</span>
+                </div>
+                <div class="progress-wrap" style="height:8px"><div class="progress-bar dot-protein" id="bar-protein" style="width:0;height:100%"></div></div>
+              </div>
+              <div class="macro-item">
+                <div class="macro-header">
+                  <span class="macro-name macro-carbs">⚡ Carbs</span>
+                  <span class="macro-gram" id="val-carbs" style="color:#A78BFA">0g / 138g</span>
+                </div>
+                <div class="progress-wrap" style="height:8px"><div class="progress-bar dot-carbs" id="bar-carbs" style="width:0;height:100%"></div></div>
+              </div>
+              <div class="macro-item" style="margin-bottom:0">
+                <div class="macro-header">
+                  <span class="macro-name macro-fat">🔥 Fat</span>
+                  <span class="macro-gram" id="val-fat" style="color:#FB923C">0g / 41g</span>
+                </div>
+                <div class="progress-wrap" style="height:8px"><div class="progress-bar dot-fat" id="bar-fat" style="width:0;height:100%"></div></div>
+              </div>
+            </div>
           </div>
 
-          <!-- Workout Toggle -->
-          <div class="workout-toggle-card mb-24 anim-fade-in">
-            <div class="workout-toggle-info">
-              <span class="workout-toggle-icon">🏋️</span>
-              <div>
-                <div class="workout-toggle-title">Day Type</div>
-                <div class="workout-toggle-sub">
-                  Affects your daily calorie goal
-                </div>
+          <!-- Goal Progress -->
+          <div class="goal-progress-wrap anim-fade-in">
+            <div class="goal-row">
+              <span class="goal-label">🎯 Weight Goal Progress</span>
+              <span class="goal-pct" id="goal-pct">0% complete</span>
+            </div>
+            <div class="d-flex justify-between align-center mb-8">
+              <span style="font-size:0.82rem;color:var(--text-muted)" id="weight-lost">-- kg lost</span>
+              <div class="goal-weights">
+                <span class="goal-current" id="current-weight">76 kg</span>
+                <span class="goal-arrow"> → </span>
+                <span class="goal-target">65 kg</span>
               </div>
             </div>
-            <div class="toggle-group">
-              <button
-                class="toggle-btn"
-                id="workout-toggle-btn"
-                data-workout="false"
-              >
-                <span id="workout-toggle-label">😴 Rest Day</span>
-              </button>
+            <div class="progress-wrap goal-bar-wrap" style="height:12px">
+              <div class="progress-bar progress-bar-green" id="goal-bar" style="width:0;height:100%"></div>
             </div>
           </div>
 
-          <div class="dashboard-grid">
-            <!-- Left Column -->
-            <div style="display: flex; flex-direction: column; gap: 20px">
-              <!-- Calorie Ring -->
-              <div class="card anim-fade-in">
-                <div class="calorie-ring-wrap">
-                  <div class="ring-container">
-                    <canvas id="macro-canvas" width="200" height="200"></canvas>
-                    <div class="ring-center">
-                      <div class="ring-cal" id="cal-eaten">0</div>
-                      <div class="ring-label">kcal eaten</div>
-                    </div>
-                  </div>
-                  <div class="ring-goal">
-                    Goal: <span id="cal-goal-label">1,462</span> kcal
-                    &nbsp;|&nbsp; Remaining:
-                    <span id="cal-remaining">1,462</span> kcal
-                  </div>
-                </div>
-                <!-- Macro Bars -->
-                <div
-                  class="macro-section"
-                  style="
-                    border-top: 1px solid var(--border-color);
-                    padding-top: 20px;
-                  "
-                >
-                  <div class="macro-item">
-                    <div class="macro-header">
-                      <span class="macro-name macro-protein">💪 Protein</span>
-                      <span
-                        class="macro-gram"
-                        id="val-protein"
-                        style="color: #3b82f6"
-                        >0g / 136g</span
-                      >
-                    </div>
-                    <div class="progress-wrap" style="height: 8px">
-                      <div
-                        class="progress-bar dot-protein"
-                        id="bar-protein"
-                        style="width: 0; height: 100%"
-                      ></div>
-                    </div>
-                  </div>
-                  <div class="macro-item">
-                    <div class="macro-header">
-                      <span class="macro-name macro-carbs">⚡ Carbs</span>
-                      <span
-                        class="macro-gram"
-                        id="val-carbs"
-                        style="color: #a78bfa"
-                        >0g / 138g</span
-                      >
-                    </div>
-                    <div class="progress-wrap" style="height: 8px">
-                      <div
-                        class="progress-bar dot-carbs"
-                        id="bar-carbs"
-                        style="width: 0; height: 100%"
-                      ></div>
-                    </div>
-                  </div>
-                  <div class="macro-item" style="margin-bottom: 0">
-                    <div class="macro-header">
-                      <span class="macro-name macro-fat">🔥 Fat</span>
-                      <span
-                        class="macro-gram"
-                        id="val-fat"
-                        style="color: #fb923c"
-                        >0g / 41g</span
-                      >
-                    </div>
-                    <div class="progress-wrap" style="height: 8px">
-                      <div
-                        class="progress-bar dot-fat"
-                        id="bar-fat"
-                        style="width: 0; height: 100%"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <!-- Today's Log Preview -->
+          <div class="card anim-fade-in">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+              <h3>Today's Food Log</h3>
+              <a href="foodlog.html" class="btn btn-secondary btn-sm">View All →</a>
+            </div>
+            <div class="log-scroll" id="today-log-list"></div>
+          </div>
+        </div>
 
-              <!-- Goal Progress -->
-              <div class="goal-progress-wrap anim-fade-in">
-                <div class="goal-row">
-                  <span class="goal-label">🎯 Weight Goal Progress</span>
-                  <span class="goal-pct" id="goal-pct">0% complete</span>
-                </div>
-                <div class="d-flex justify-between align-center mb-8">
-                  <span
-                    style="font-size: 0.82rem; color: var(--text-muted)"
-                    id="weight-lost"
-                    >-- kg lost</span
-                  >
-                  <div class="goal-weights">
-                    <span class="goal-current" id="current-weight">76 kg</span>
-                    <span class="goal-arrow"> → </span>
-                    <span class="goal-target">65 kg</span>
-                  </div>
-                </div>
-                <div class="progress-wrap goal-bar-wrap" style="height: 12px">
-                  <div
-                    class="progress-bar progress-bar-green"
-                    id="goal-bar"
-                    style="width: 0; height: 100%"
-                  ></div>
-                </div>
-              </div>
+        <!-- Right Column -->
+        <div style="display:flex;flex-direction:column;gap:20px">
 
-              <!-- Today's Log Preview -->
-              <div class="card anim-fade-in">
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    margin-bottom: 16px;
-                  "
-                >
-                  <h3>Today's Food Log</h3>
-                  <a href="foodlog.html" class="btn btn-secondary btn-sm"
-                    >View All →</a
-                  >
+          <!-- Stats -->
+          <div class="grid-2 stagger-children" style="gap:12px">
+            <div class="stat-card anim-fade-in">
+              <div class="stat-label">Protein</div>
+              <div class="stat-value macro-protein" data-macro="protein">0<span class="stat-unit">g</span></div>
+            </div>
+            <div class="stat-card anim-fade-in">
+              <div class="stat-label">Carbs</div>
+              <div class="stat-value macro-carbs" data-macro="carbs">0<span class="stat-unit">g</span></div>
+            </div>
+            <div class="stat-card anim-fade-in">
+              <div class="stat-label">Fat</div>
+              <div class="stat-value macro-fat" data-macro="fat">0<span class="stat-unit">g</span></div>
+            </div>
+            <div class="stat-card anim-fade-in">
+              <div class="stat-label">Goal</div>
+              <div class="stat-value" style="font-size:1.2rem;color:var(--accent-primary)" id="cal-goal-stat">1,462<span class="stat-unit">kcal</span></div>
+            </div>
+          </div>
+
+          <!-- Water Tracker -->
+          <div class="card anim-fade-in">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+              <h4>💧 Water Intake</h4>
+              <button class="btn btn-ghost btn-sm" id="water-reset">Reset</button>
+            </div>
+            <div class="water-glass-wrap">
+              <svg id="water-glass-svg" class="water-glass-svg" viewBox="0 0 60 96" width="60" height="96"></svg>
+              <div class="water-glass-info">
+                <div class="water-glass-ml" id="water-ml">0 ml</div>
+                <div class="water-glass-target" id="water-target">Goal: 3000 ml</div>
+                <div class="water-glass-btns">
+                  <button class="water-add-btn" data-water-add="250">+250ml</button>
+                  <button class="water-add-btn" data-water-add="500">+500ml</button>
                 </div>
-                <div class="log-scroll" id="today-log-list"></div>
               </div>
             </div>
+          </div>
 
-            <!-- Right Column -->
-            <div style="display: flex; flex-direction: column; gap: 20px">
-              <!-- Stats -->
-              <div class="grid-2 stagger-children" style="gap: 12px">
-                <div class="stat-card anim-fade-in">
-                  <div class="stat-label">Protein</div>
-                  <div class="stat-value macro-protein" data-macro="protein">
-                    0<span class="stat-unit">g</span>
-                  </div>
-                </div>
-                <div class="stat-card anim-fade-in">
-                  <div class="stat-label">Carbs</div>
-                  <div class="stat-value macro-carbs" data-macro="carbs">
-                    0<span class="stat-unit">g</span>
-                  </div>
-                </div>
-                <div class="stat-card anim-fade-in">
-                  <div class="stat-label">Fat</div>
-                  <div class="stat-value macro-fat" data-macro="fat">
-                    0<span class="stat-unit">g</span>
-                  </div>
-                </div>
-                <div class="stat-card anim-fade-in">
-                  <div class="stat-label">Goal</div>
-                  <div
-                    class="stat-value"
-                    style="font-size: 1.2rem; color: var(--accent-primary)"
-                    id="cal-goal-stat"
-                  >
-                    1,462<span class="stat-unit">kcal</span>
-                  </div>
-                </div>
-              </div>
+          <!-- Weight Input -->
+          <div class="card anim-fade-in">
+            <h4 style="margin-bottom:14px">⚖️ Log Today's Weight</h4>
+            <div style="display:flex;gap:10px;align-items:center">
+              <input type="number" id="weight-input" class="form-input" placeholder="e.g. 75.5" min="20" max="300" step="0.1" style="flex:1"/>
+              <span style="color:var(--text-muted);font-size:0.9rem;flex-shrink:0">kg</span>
+              <button id="weight-save-btn" class="btn btn-primary btn-sm" style="flex-shrink:0">Save</button>
+            </div>
+          </div>
 
-              <!-- Water Tracker -->
-              <div class="card anim-fade-in">
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    margin-bottom: 16px;
-                  "
-                >
-                  <h4>💧 Water Intake</h4>
-                  <button class="btn btn-ghost btn-sm" id="water-reset">
-                    Reset
-                  </button>
-                </div>
-                <div class="water-glass-wrap">
-                  <svg
-                    id="water-glass-svg"
-                    class="water-glass-svg"
-                    viewBox="0 0 52 84"
-                    width="52"
-                    height="84"
-                  ></svg>
-                  <div class="water-glass-info">
-                    <div class="water-glass-ml" id="water-ml">0 ml</div>
-                    <div class="water-glass-target" id="water-target">
-                      Goal: 3000 ml
-                    </div>
-                    <div class="water-glass-btns">
-                      <button class="water-add-btn" data-water-add="250">
-                        +250ml
-                      </button>
-                      <button class="water-add-btn" data-water-add="500">
-                        +500ml
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Weight Input -->
-              <div class="card anim-fade-in">
-                <h4 style="margin-bottom: 14px">⚖️ Log Today's Weight</h4>
-                <div style="display: flex; gap: 10px; align-items: center">
-                  <input
-                    type="number"
-                    id="weight-input"
-                    class="form-input"
-                    placeholder="e.g. 75.5"
-                    min="20"
-                    max="300"
-                    step="0.1"
-                    style="flex: 1"
-                  />
-                  <span
-                    style="
-                      color: var(--text-muted);
-                      font-size: 0.9rem;
-                      flex-shrink: 0;
-                    "
-                    >kg</span
-                  >
-                  <button
-                    id="weight-save-btn"
-                    class="btn btn-primary btn-sm"
-                    style="flex-shrink: 0"
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
-
-              <!-- Quick Links -->
-              <div
-                class="card anim-fade-in"
-                style="
-                  background: linear-gradient(
-                    135deg,
-                    rgba(229, 9, 20, 0.06),
-                    rgba(244, 162, 97, 0.06)
-                  );
-                "
-              >
-                <h4 style="margin-bottom: 14px">⚡ Quick Actions</h4>
-                <div style="display: flex; flex-direction: column; gap: 8px">
-                  <a href="foodlog.html" class="btn btn-secondary btn-sm w-full"
-                    >🍽️ Add Food Entry</a
-                  >
-                  <a
-                    href="progress.html"
-                    class="btn btn-secondary btn-sm w-full"
-                    >📈 View Progress</a
-                  >
-                  <a
-                    href="database.html"
-                    class="btn btn-secondary btn-sm w-full"
-                    >🗄️ Browse Food Database</a
-                  >
-                </div>
-              </div>
+          <!-- Quick Links -->
+          <div class="card anim-fade-in" style="background:linear-gradient(135deg,rgba(229,9,20,0.06),rgba(244,162,97,0.06))">
+            <h4 style="margin-bottom:14px">⚡ Quick Actions</h4>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <a href="foodlog.html" class="btn btn-secondary btn-sm w-full">🍽️ Add Food Entry</a>
+              <a href="progress.html" class="btn btn-secondary btn-sm w-full">📈 View Progress</a>
+              <a href="database.html" class="btn btn-secondary btn-sm w-full">🗄️ Browse Food Database</a>
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
+  </main>
+</div>
 
-    <div id="toast-container" class="toast-container"></div>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="firebase-config.js"></script>
-    <script src="auth.js"></script>
-    <script src="app.js"></script>
-    <script src="animations.js"></script>
-    <script src="fooddata.js"></script>
-    <script src="dashboard.js"></script>
+<div id="toast-container" class="toast-container"></div>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+  <script src="auth.js"></script>
+<script src="app.js"></script>
+<script src="animations.js"></script>
+<script src="fooddata.js"></script>
+<script src="dashboard.js"></script>
 
-    <script>
-      // Auth guard
-      (function () {
-        const user = Auth.requireAuth();
-        if (!user) return;
-        // Show username in navbar
-        const el = document.createElement("span");
-        el.style.cssText =
-          "font-size:0.82rem;color:var(--text-muted);font-weight:600;padding:0 8px";
-        el.textContent = "👤 " + user;
-        const actions = document.querySelector(".nav-actions");
-        if (actions) actions.insertBefore(el, actions.firstChild);
-      })();
-    </script>
-  </body>
+<script>
+// Auth guard
+(function() {
+  const user = Auth.requireAuth();
+  if (!user) return;
+  // Show username in navbar
+  const el = document.createElement('span');
+  el.style.cssText = 'font-size:0.82rem;color:var(--text-muted);font-weight:600;padding:0 8px';
+  el.textContent = '👤 ' + user;
+  const actions = document.querySelector('.nav-actions');
+  if (actions) actions.insertBefore(el, actions.firstChild);
+})();
+</script>
+</body>
 </html>

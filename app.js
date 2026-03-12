@@ -210,64 +210,63 @@ const WaterGlass = {
     const glassColor = isDark ? '#4EC9B0' : '#0284C7';
     const bgColor    = isDark ? '#252526' : '#E0F2FE';
 
-    // Glass inner area: x=10, y=16, w=32, h=52 (bottom y=68)
-    const GLASS_X = 10, GLASS_Y = 16, GLASS_W = 32, GLASS_H = 52;
-    const fillHeight = Math.round(clamped * GLASS_H);
-    const fillY = GLASS_Y + (GLASS_H - fillHeight);  // water top Y
-    const waveY = fillY;
+    // viewBox is 60x96
+    // Rim:   x=8,  y=6,  w=44, h=8  (bottom y=14)
+    // Glass: x=10, y=14, w=40, h=62 (bottom y=76)
+    // Text:  y=90
+    const GX=10, GY=14, GW=40, GH=62;
+    const fillHeight = Math.round(clamped * GH);
+    const fillY = GY + GH - fillHeight;
 
     svg.innerHTML = `
       <defs>
-        <!-- Clip strictly to inner glass area -->
         <clipPath id="wg-clip-${svgId}">
-          <rect x="${GLASS_X}" y="${GLASS_Y}" width="${GLASS_W}" height="${GLASS_H}" rx="3"/>
+          <rect x="${GX}" y="${GY}" width="${GW}" height="${GH}" rx="4"/>
         </clipPath>
         <linearGradient id="wg-grad-${svgId}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="${waterColor}" stop-opacity="0.85"/>
+          <stop offset="0%"   stop-color="${waterColor}" stop-opacity="0.8"/>
           <stop offset="100%" stop-color="${waterDark}"  stop-opacity="1"/>
         </linearGradient>
       </defs>
 
-      <!-- Glass background (empty part) -->
-      <rect x="${GLASS_X}" y="${GLASS_Y}" width="${GLASS_W}" height="${GLASS_H}"
-            rx="3" fill="${bgColor}" stroke="none"/>
+      <!-- Rim -->
+      <rect x="7" y="6" width="46" height="9" rx="4"
+            fill="${glassColor}" opacity="0.8"/>
 
-      <!-- Water fill + wave — all clipped inside glass -->
+      <!-- Glass body background -->
+      <rect x="${GX}" y="${GY}" width="${GW}" height="${GH}"
+            rx="4" fill="${bgColor}"/>
+
+      <!-- Water + wave, clipped inside glass -->
       <g clip-path="url(#wg-clip-${svgId})">
-        <!-- Water body -->
         ${fillHeight > 0 ? `
-        <rect x="${GLASS_X}" y="${fillY}" width="${GLASS_W}" height="${fillHeight}"
-              fill="url(#wg-grad-${svgId})"/>
+          <rect x="${GX}" y="${fillY}" width="${GW}" height="${fillHeight + 2}"
+                fill="url(#wg-grad-${svgId})"/>
         ` : ''}
-        <!-- Animated wave on water surface -->
         ${clamped > 0.02 && clamped < 0.99 ? `
-        <g>
-          <path d="M${GLASS_X-GLASS_W} ${waveY}
-                   Q${GLASS_X - GLASS_W/2} ${waveY-4} ${GLASS_X} ${waveY}
-                   Q${GLASS_X + GLASS_W/2} ${waveY+4} ${GLASS_X+GLASS_W} ${waveY}
-                   Q${GLASS_X+GLASS_W*1.5} ${waveY-4} ${GLASS_X+GLASS_W*2} ${waveY}
-                   L${GLASS_X+GLASS_W*2} ${GLASS_Y+GLASS_H} L${GLASS_X-GLASS_W} ${GLASS_Y+GLASS_H} Z"
-                fill="${waterColor}" opacity="0.4">
+          <path d="M${GX - GW} ${fillY}
+                   Q${GX}        ${fillY - 5}
+                     ${GX + GW}  ${fillY}
+                   Q${GX + GW*2} ${fillY + 5}
+                     ${GX + GW*3} ${fillY}
+                   L${GX + GW*3} ${GY + GH}
+                   L${GX - GW}   ${GY + GH} Z"
+                fill="${waterColor}" opacity="0.35">
             <animateTransform attributeName="transform" type="translate"
-              from="${-GLASS_W} 0" to="0 0" dur="2.5s" repeatCount="indefinite"/>
+              from="0 0" to="${GW} 0" dur="2.5s" repeatCount="indefinite"/>
           </path>
-        </g>
         ` : ''}
       </g>
 
-      <!-- Glass border (drawn ON TOP so it covers any overflow) -->
-      <rect x="${GLASS_X}" y="${GLASS_Y}" width="${GLASS_W}" height="${GLASS_H}"
-            rx="3" fill="none" stroke="${glassColor}" stroke-width="2.5"/>
+      <!-- Glass border drawn ON TOP to mask any edge bleed -->
+      <rect x="${GX}" y="${GY}" width="${GW}" height="${GH}"
+            rx="4" fill="none" stroke="${glassColor}" stroke-width="3"/>
 
-      <!-- Glass rim / top lip -->
-      <rect x="${GLASS_X - 3}" y="${GLASS_Y - 5}" width="${GLASS_W + 6}" height="6"
-            rx="3" fill="${glassColor}" opacity="0.7"/>
-
-      <!-- Percentage text below glass -->
-      <text x="${GLASS_X + GLASS_W/2}" y="${GLASS_Y + GLASS_H + 14}"
-            text-anchor="middle" font-size="10" font-family="DM Sans"
+      <!-- Percentage -->
+      <text x="${GX + GW / 2}" y="90"
+            text-anchor="middle" font-size="11" font-family="DM Sans"
             font-weight="700" fill="${glassColor}">
-        ${Math.round(clamped*100)}%
+        ${Math.round(clamped * 100)}%
       </text>
     `;
   }

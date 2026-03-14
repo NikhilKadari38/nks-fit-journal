@@ -21,7 +21,11 @@ const Dashboard = (() => {
     return {
       weight:         p.weight         || DEFAULTS.weight,
       goalWeight:     p.goalWeight     || DEFAULTS.goalWeight,
-      goalType:       p.goalType       || DEFAULTS.goalType,
+      goalType:       p.goalType || (
+        (p.weight && p.goalWeight)
+          ? (p.weight < p.goalWeight ? 'gain' : p.weight > p.goalWeight ? 'lose' : 'maintain')
+          : DEFAULTS.goalType
+      ),
       caloriesRest:   p.caloriesRest   || DEFAULTS.caloriesRest,
       caloriesWorkout:p.caloriesWorkout|| DEFAULTS.caloriesWorkout,
       waterGoal:      p.waterGoal      || DEFAULTS.waterGoalMl,

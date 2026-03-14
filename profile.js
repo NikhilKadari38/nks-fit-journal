@@ -52,6 +52,15 @@ const ProfilePage = (() => {
       const key = f.replace(/-./g, m => m[1].toUpperCase());
       if (el && profile[key] !== undefined) el.value = profile[key];
     });
+    // Auto-detect goalType from weights if user never set it manually
+    if (!NKStorage.getProfile()?.goalType) {
+      const goalTypeEl = document.getElementById('p-goal-type');
+      if (goalTypeEl) {
+        if (profile.weight < profile.goalWeight) goalTypeEl.value = 'gain';
+        else if (profile.weight > profile.goalWeight) goalTypeEl.value = 'lose';
+        else goalTypeEl.value = 'maintain';
+      }
+    }
     renderProfileDisplay(profile);
   };
 
@@ -135,7 +144,16 @@ const ProfilePage = (() => {
       if (profile.height < 100 || profile.height > 250) { Toast.error('Enter a valid height (cm)'); return; }
 
       NKStorage.setProfile(profile);
-      renderProfileDisplay(profile);
+      // Auto-detect goalType from weights if user never set it manually
+    if (!NKStorage.getProfile()?.goalType) {
+      const goalTypeEl = document.getElementById('p-goal-type');
+      if (goalTypeEl) {
+        if (profile.weight < profile.goalWeight) goalTypeEl.value = 'gain';
+        else if (profile.weight > profile.goalWeight) goalTypeEl.value = 'lose';
+        else goalTypeEl.value = 'maintain';
+      }
+    }
+    renderProfileDisplay(profile);
       renderStats();
       Toast.success('✅ Profile saved successfully!');
     });

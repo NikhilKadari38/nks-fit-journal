@@ -1,265 +1,173 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23E50914'/><text x='50' y='68' font-size='45' font-weight='bold' text-anchor='middle' fill='white' font-family='serif'>NK</text></svg>"
-    />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Progress — NK's Fit Journal</title>
-    <link rel="stylesheet" href="main.css" />
-    <link rel="stylesheet" href="components.css" />
-    <style>
-      .charts-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-      }
-      .chart-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-lg);
-        padding: 24px;
-        backdrop-filter: blur(16px);
-      }
-      .chart-title {
-        font-family: var(--heading-font);
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 4px;
-      }
-      .chart-sub {
-        font-size: 0.82rem;
-        color: var(--text-muted);
-        margin-bottom: 20px;
-      }
-      .chart-wrap {
-        position: relative;
-        height: 240px;
-      }
-      .streak-section {
-        margin-top: 8px;
-      }
-      .streak-label-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-      }
-      .streak-months {
-        display: flex;
-        gap: 4px;
-        margin-bottom: 6px;
-        overflow-x: auto;
-      }
-      .streak-grid {
-        display: flex;
-        gap: 4px;
-        flex-wrap: wrap;
-      }
-      @media (max-width: 800px) {
-        .charts-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <canvas id="bg-canvas"></canvas>
-    <div class="site-wrapper">
-      <nav class="navbar">
-        <div class="navbar-inner">
-          <a href="index.html" class="nav-brand"
-            ><div class="nav-logo">NK</div>
-            <span class="nav-brand-name"><span>NK's</span> Fit Journal</span></a
-          >
-          <ul class="nav-links">
-            <li><a href="index.html" class="nav-link">🏠 Home</a></li>
-            <li><a href="dashboard.html" class="nav-link">📊 Dashboard</a></li>
-            <li><a href="foodlog.html" class="nav-link">🍽️ Food Log</a></li>
-            <li><a href="database.html" class="nav-link">🗄️ Database</a></li>
-            <li><a href="progress.html" class="nav-link">📈 Progress</a></li>
-            <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
-          </ul>
-          <div class="nav-actions">
-            <button class="theme-toggle">
-              <div class="theme-toggle-track">
-                <div class="theme-toggle-thumb">
-                  <span class="theme-toggle-sun">☀️</span
-                  ><span class="theme-toggle-moon">🌙</span>
-                </div>
-              </div>
-            </button>
-            <button class="btn-logout" onclick="Auth.logout()" title="Logout">
-              🚪 Logout
-            </button>
-            <button class="nav-hamburger" id="nav-hamburger">
-              <span></span><span></span><span></span>
-            </button>
-          </div>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Progress — NK's Fit Journal</title>
+  <link rel="stylesheet" href="main.css"/>
+  <link rel="stylesheet" href="components.css"/>
+  <style>
+    /* Smooth load */
+    .page-loader { position:fixed;inset:0;z-index:9999;background:var(--bg-primary);display:flex;align-items:center;justify-content:center;transition:opacity 0.3s ease; }
+    .page-loader.hidden { opacity:0;pointer-events:none; }
+    .loader-spinner { width:36px;height:36px;border-radius:50%;border:3px solid var(--border-color);border-top-color:var(--accent-primary);animation:spin 0.7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .page-content { opacity:0;transition:opacity 0.35s ease; }
+    .page-content.ready { opacity:1; }
+    .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+    .chart-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:24px; backdrop-filter:blur(16px); }
+    .chart-title { font-family:var(--heading-font); font-size:1.1rem; font-weight:600; margin-bottom:4px; }
+    .chart-sub { font-size:0.82rem; color:var(--text-muted); margin-bottom:20px; }
+    .chart-wrap { position:relative; height:240px; }
+    .streak-section { margin-top:8px; }
+    .streak-label-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .streak-months { display:flex; gap:4px; margin-bottom:6px; overflow-x:auto; }
+    .streak-grid { display:flex; gap:4px; flex-wrap:wrap; }
+    @media(max-width:800px) { .charts-grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="page-loader" id="page-loader"><div class="loader-spinner"></div></div>
+<div class="site-wrapper">
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="nav-brand"><div class="nav-logo">NK</div><span class="nav-brand-name"><span>NK's</span> Fit Journal</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">🏠 Home</a></li>
+        <li><a href="dashboard.html" class="nav-link">📊 Dashboard</a></li>
+        <li><a href="foodlog.html" class="nav-link">🍽️ Food Log</a></li>
+        <li><a href="database.html" class="nav-link">🗄️ Database</a></li>
+        <li><a href="progress.html" class="nav-link">📈 Progress</a></li>
+        <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle"><div class="theme-toggle-track"><div class="theme-toggle-thumb"><span class="theme-toggle-sun">☀️</span><span class="theme-toggle-moon">🌙</span></div></div></button>
+        <button class="btn-logout" onclick="Auth.logout()" title="Logout">🚪 Logout</button>
+        <button class="nav-hamburger" id="nav-hamburger"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+  <div class="nav-mobile" id="nav-mobile">
+    <ul class="nav-links">
+      <li><a href="index.html" class="nav-link">🏠 Home</a></li>
+      <li><a href="dashboard.html" class="nav-link">📊 Dashboard</a></li>
+      <li><a href="foodlog.html" class="nav-link">🍽️ Food Log</a></li>
+      <li><a href="database.html" class="nav-link">🗄️ Database</a></li>
+      <li><a href="progress.html" class="nav-link active">📈 Progress</a></li>
+      <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="container page-content" id="page-content>
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Progress</h1>
+          <p class="page-subtitle">Your journey visualized — last 30 days</p>
         </div>
-      </nav>
-      <div class="nav-mobile" id="nav-mobile">
-        <ul class="nav-links">
-          <li><a href="index.html" class="nav-link">🏠 Home</a></li>
-          <li><a href="dashboard.html" class="nav-link">📊 Dashboard</a></li>
-          <li><a href="foodlog.html" class="nav-link">🍽️ Food Log</a></li>
-          <li><a href="database.html" class="nav-link">🗄️ Database</a></li>
-          <li>
-            <a href="progress.html" class="nav-link active">📈 Progress</a>
-          </li>
-          <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
-        </ul>
+        <a href="dashboard.html" class="btn btn-secondary">← Dashboard</a>
       </div>
 
-      <main>
-        <div class="container">
-          <div class="page-header">
-            <div>
-              <h1 class="page-title">Progress</h1>
-              <p class="page-subtitle">
-                Your journey visualized — last 30 days
-              </p>
-            </div>
-            <a href="dashboard.html" class="btn btn-secondary">← Dashboard</a>
+      <!-- Summary stats -->
+      <div class="grid-4 mb-24 stagger-children">
+        <div class="stat-card anim-fade-in">
+          <div class="stat-label">📅 Days Logged</div>
+          <div class="stat-value" id="stat-days-logged">--</div>
+        </div>
+        <div class="stat-card anim-fade-in">
+          <div class="stat-label">🔥 Current Streak</div>
+          <div class="stat-value" id="stat-streak" style="color:var(--accent-primary)">--</div>
+        </div>
+        <div class="stat-card anim-fade-in">
+          <div class="stat-label">⚖️ Weight Lost</div>
+          <div class="stat-value" id="stat-weight-lost" style="color:var(--success)">--</div>
+        </div>
+        <div class="stat-card anim-fade-in">
+          <div class="stat-label">🍽️ Avg Calories</div>
+          <div class="stat-value" id="stat-avg-calories">--</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid mb-24">
+        <!-- Weight Chart -->
+        <div class="chart-card anim-fade-in">
+          <div class="chart-title">⚖️ Weight Over Time</div>
+          <div class="chart-sub">Track your journey to 65 kg</div>
+          <div class="chart-wrap">
+            <canvas id="weight-chart"></canvas>
           </div>
+        </div>
 
-          <!-- Summary stats -->
-          <div class="grid-4 mb-24 stagger-children">
-            <div class="stat-card anim-fade-in">
-              <div class="stat-label">📅 Days Logged</div>
-              <div class="stat-value" id="stat-days-logged">--</div>
-            </div>
-            <div class="stat-card anim-fade-in">
-              <div class="stat-label">🔥 Current Streak</div>
-              <div
-                class="stat-value"
-                id="stat-streak"
-                style="color: var(--accent-primary)"
-              >
-                --
-              </div>
-            </div>
-            <div class="stat-card anim-fade-in">
-              <div class="stat-label">⚖️ Weight Lost</div>
-              <div
-                class="stat-value"
-                id="stat-weight-lost"
-                style="color: var(--success)"
-              >
-                --
-              </div>
-            </div>
-            <div class="stat-card anim-fade-in">
-              <div class="stat-label">🍽️ Avg Calories</div>
-              <div class="stat-value" id="stat-avg-calories">--</div>
-            </div>
+        <!-- Calorie Chart -->
+        <div class="chart-card anim-fade-in">
+          <div class="chart-title">🍽️ Calories: Eaten vs Goal</div>
+          <div class="chart-sub">Last 14 days</div>
+          <div class="chart-wrap">
+            <canvas id="calorie-chart"></canvas>
           </div>
+        </div>
+      </div>
 
-          <!-- Charts -->
-          <div class="charts-grid mb-24">
-            <!-- Weight Chart -->
-            <div class="chart-card anim-fade-in">
-              <div class="chart-title">⚖️ Weight Over Time</div>
-              <div class="chart-sub">Track your journey to 65 kg</div>
-              <div class="chart-wrap">
-                <canvas id="weight-chart"></canvas>
-              </div>
-            </div>
-
-            <!-- Calorie Chart -->
-            <div class="chart-card anim-fade-in">
-              <div class="chart-title">🍽️ Calories: Eaten vs Goal</div>
-              <div class="chart-sub">Last 14 days</div>
-              <div class="chart-wrap">
-                <canvas id="calorie-chart"></canvas>
-              </div>
-            </div>
+      <!-- Macro Donut + Streak -->
+      <div class="charts-grid">
+        <!-- Macro Donut -->
+        <div class="chart-card anim-fade-in">
+          <div class="chart-title">🥗 Macro Split</div>
+          <div class="chart-sub">Average over last 7 logged days</div>
+          <div class="chart-wrap">
+            <canvas id="macro-chart"></canvas>
           </div>
+        </div>
 
-          <!-- Macro Donut + Streak -->
-          <div class="charts-grid">
-            <!-- Macro Donut -->
-            <div class="chart-card anim-fade-in">
-              <div class="chart-title">🥗 Macro Split</div>
-              <div class="chart-sub">Average over last 7 logged days</div>
-              <div class="chart-wrap">
-                <canvas id="macro-chart"></canvas>
+        <!-- Streak Calendar -->
+        <div class="chart-card anim-fade-in">
+          <div class="chart-title">📅 Logging Streak</div>
+          <div class="chart-sub">Last 30 days — darker = more calories logged</div>
+          <div class="streak-section">
+            <div id="streak-grid" class="streak-grid"></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:0.75rem;color:var(--text-muted)">
+              <span>Less</span>
+              <div style="display:flex;gap:3px">
+                <div class="streak-cell" style="width:14px;height:14px"></div>
+                <div class="streak-cell logged-low" style="width:14px;height:14px"></div>
+                <div class="streak-cell logged-med" style="width:14px;height:14px"></div>
+                <div class="streak-cell logged-high" style="width:14px;height:14px"></div>
               </div>
-            </div>
-
-            <!-- Streak Calendar -->
-            <div class="chart-card anim-fade-in">
-              <div class="chart-title">📅 Logging Streak</div>
-              <div class="chart-sub">
-                Last 30 days — darker = more calories logged
-              </div>
-              <div class="streak-section">
-                <div id="streak-grid" class="streak-grid"></div>
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    margin-top: 14px;
-                    font-size: 0.75rem;
-                    color: var(--text-muted);
-                  "
-                >
-                  <span>Less</span>
-                  <div style="display: flex; gap: 3px">
-                    <div
-                      class="streak-cell"
-                      style="width: 14px; height: 14px"
-                    ></div>
-                    <div
-                      class="streak-cell logged-low"
-                      style="width: 14px; height: 14px"
-                    ></div>
-                    <div
-                      class="streak-cell logged-med"
-                      style="width: 14px; height: 14px"
-                    ></div>
-                    <div
-                      class="streak-cell logged-high"
-                      style="width: 14px; height: 14px"
-                    ></div>
-                  </div>
-                  <span>More</span>
-                </div>
-              </div>
+              <span>More</span>
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
+  </main>
+</div>
 
-    <div id="toast-container" class="toast-container"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="firebase-config.js"></script>
-    <script src="auth.js"></script>
-    <script src="app.js"></script>
-    <script src="animations.js"></script>
-    <script src="fooddata.js"></script>
-    <script src="progress.js"></script>
+<div id="toast-container" class="toast-container"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+  <script src="auth.js"></script>
+<script src="app.js"></script>
+<script src="animations.js"></script>
+<script src="fooddata.js"></script>
+<script src="progress.js"></script>
 
-    <script>
-      // Auth guard
-      (function () {
-        const user = Auth.requireAuth();
-        if (!user) return;
-        // Show username in navbar
-        const el = document.createElement("span");
-        el.style.cssText =
-          "font-size:0.82rem;color:var(--text-muted);font-weight:600;padding:0 8px";
-        el.textContent = "👤 " + user;
-        const actions = document.querySelector(".nav-actions");
-        if (actions) actions.insertBefore(el, actions.firstChild);
-      })();
-    </script>
-  </body>
+<script>
+// Auth guard
+(function() {
+  const user = Auth.requireAuth();
+  if (!user) return;
+  // Show username in navbar
+  const el = document.createElement('span');
+  el.style.cssText = 'font-size:0.82rem;color:var(--text-muted);font-weight:600;padding:0 8px';
+  el.textContent = '👤 ' + user;
+  const actions = document.querySelector('.nav-actions');
+  if (actions) actions.insertBefore(el, actions.firstChild);
+})();
+</script>
+</body>
 </html>

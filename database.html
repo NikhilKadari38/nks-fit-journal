@@ -7,6 +7,13 @@
   <link rel="stylesheet" href="main.css"/>
   <link rel="stylesheet" href="components.css"/>
   <style>
+    /* Smooth load */
+    .page-loader { position:fixed;inset:0;z-index:9999;background:var(--bg-primary);display:flex;align-items:center;justify-content:center;transition:opacity 0.3s ease; }
+    .page-loader.hidden { opacity:0;pointer-events:none; }
+    .loader-spinner { width:36px;height:36px;border-radius:50%;border:3px solid var(--border-color);border-top-color:var(--accent-primary);animation:spin 0.7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .page-content { opacity:0;transition:opacity 0.35s ease; }
+    .page-content.ready { opacity:1; }
     .stat-filter-card { user-select:none; }
     .stat-filter-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.12); }
     .stat-filter-card.active-filter { border:2px solid var(--accent-primary) !important; background:linear-gradient(135deg, rgba(229,9,20,0.06), rgba(255,107,0,0.06)); }
@@ -15,6 +22,7 @@
 </head>
 <body>
 <canvas id="bg-canvas"></canvas>
+<div class="page-loader" id="page-loader"><div class="loader-spinner"></div></div>
 <div class="site-wrapper">
   <nav class="navbar">
     <div class="navbar-inner">
@@ -46,7 +54,7 @@
   </div>
 
   <main>
-    <div class="container">
+    <div class="container page-content" id="page-content>
       <div class="page-header">
         <div>
           <h1 class="page-title">Food Database</h1>

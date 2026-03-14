@@ -7,6 +7,13 @@
   <link rel="stylesheet" href="main.css"/>
   <link rel="stylesheet" href="components.css"/>
   <style>
+    /* Smooth load */
+    .page-loader { position:fixed;inset:0;z-index:9999;background:var(--bg-primary);display:flex;align-items:center;justify-content:center;transition:opacity 0.3s ease; }
+    .page-loader.hidden { opacity:0;pointer-events:none; }
+    .loader-spinner { width:36px;height:36px;border-radius:50%;border:3px solid var(--border-color);border-top-color:var(--accent-primary);animation:spin 0.7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .page-content { opacity:0;transition:opacity 0.35s ease; }
+    .page-content.ready { opacity:1; }
     .profile-grid { display:grid; grid-template-columns:320px 1fr; gap:24px; align-items:start; }
     .avatar-card { text-align:center; padding:28px 20px; overflow:hidden; box-sizing:border-box; }
     .avatar { width:84px; height:84px; border-radius:50%; background:linear-gradient(135deg,var(--accent-primary),var(--accent-orange)); display:flex; align-items:center; justify-content:center; font-family:var(--heading-font); font-size:1.9rem; font-weight:700; color:white; margin:0 auto 14px; box-shadow:0 8px 24px rgba(229,9,20,0.35); }
@@ -24,6 +31,7 @@
 </head>
 <body>
 <canvas id="bg-canvas"></canvas>
+<div class="page-loader" id="page-loader"><div class="loader-spinner"></div></div>
 <div class="site-wrapper">
   <nav class="navbar">
     <div class="navbar-inner">
@@ -55,7 +63,7 @@
   </div>
 
   <main>
-    <div class="container">
+    <div class="container page-content" id="page-content>
       <div class="page-header">
         <div>
           <h1 class="page-title">Profile</h1>

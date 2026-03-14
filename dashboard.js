@@ -328,4 +328,17 @@ document.addEventListener('DOMContentLoaded', async function() {
   BGAnim.init('dashboard');
   await syncFromCloud();
   Dashboard.init();
+
+  // Reveal content smoothly after all values are populated
+  const loader = document.getElementById('page-loader');
+  const content = document.getElementById('dashboard-content');
+  if (loader) {
+    loader.classList.add('hidden');
+    setTimeout(function() { loader.style.display = 'none'; }, 350);
+  }
+  if (content) {
+    requestAnimationFrame(function() {
+      content.classList.add('ready');
+    });
+  }
 });

@@ -485,4 +485,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await syncFromCloud();
   ProfilePage.init();
   AdminPanel.init();
+
+  // Reveal content smoothly
+  const loader = document.getElementById('page-loader');
+  const pageContent = document.getElementById('page-content');
+  if (loader) { loader.classList.add('hidden'); setTimeout(function() { loader.style.display='none'; }, 350); }
+  if (pageContent) { requestAnimationFrame(function() { pageContent.classList.add('ready'); }); }
 });

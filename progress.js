@@ -244,4 +244,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   } else {
     Toast.error('Charts library not loaded. Please check your internet connection.');
   }
+
+  // Reveal content smoothly
+  const loader = document.getElementById('page-loader');
+  const pageContent = document.getElementById('page-content');
+  if (loader) { loader.classList.add('hidden'); setTimeout(function() { loader.style.display='none'; }, 350); }
+  if (pageContent) { requestAnimationFrame(function() { pageContent.classList.add('ready'); }); }
 });

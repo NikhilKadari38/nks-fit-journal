@@ -256,4 +256,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   BGAnim.init('database');
   await syncFromCloud();
   FoodDatabase.init();
+
+  // Reveal content smoothly
+  const loader = document.getElementById('page-loader');
+  const pageContent = document.getElementById('page-content');
+  if (loader) { loader.classList.add('hidden'); setTimeout(function() { loader.style.display='none'; }, 350); }
+  if (pageContent) { requestAnimationFrame(function() { pageContent.classList.add('ready'); }); }
 });

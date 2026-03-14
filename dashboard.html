@@ -40,6 +40,10 @@
 </head>
 <body>
 <canvas id="bg-canvas"></canvas>
+<!-- Page loader — shown until data is ready -->
+<div class="page-loader" id="page-loader">
+  <div class="loader-spinner"></div>
+</div>
 <div class="site-wrapper">
   <nav class="navbar">
     <div class="navbar-inner">
@@ -74,7 +78,7 @@
   </div>
 
   <main>
-    <div class="container">
+    <div class="container dashboard-content" id="dashboard-content">
       <!-- Header -->
       <div class="page-header">
         <div>

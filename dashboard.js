@@ -37,6 +37,20 @@ const Dashboard = (() => {
     };
   };
 
+  // Calculate macros from calories + goal type — no dependency on profile.js
+  const calcMacros = (calories, goalType) => {
+    const splits = goalType === 'gain'
+      ? { protein: 0.30, carbs: 0.45, fat: 0.25 }
+      : goalType === 'lose'
+      ? { protein: 0.40, carbs: 0.30, fat: 0.30 }
+      : { protein: 0.30, carbs: 0.40, fat: 0.30 };
+    return {
+      protein: Math.round((calories * splits.protein) / 4),
+      carbs:   Math.round((calories * splits.carbs)   / 4),
+      fat:     Math.round((calories * splits.fat)     / 9),
+    };
+  };
+
   const init = () => {
     today = Utils.today();
     todayLog = NKStorage.getFoodLog(today);
@@ -149,18 +163,9 @@ const Dashboard = (() => {
     const calGoalStat = document.getElementById('cal-goal-stat');
     if (calGoalStat) calGoalStat.innerHTML = goal.toLocaleString() + '<span class="stat-unit">kcal</span>';
 
-    // Macro bars — use profile macros
-    // Get macros from saved profile or calculate dynamically
+    // Macro bars — always calculate from calorie goal + goal type
     const goalType = p.goalType || 'lose';
-    const activeCals = goal; // already resolved above based on dayType
-    let savedMacros = dayType === 'full' ? p.macrosFull
-                    : dayType === 'moderate' ? p.macrosModerate
-                    : p.macrosRest;
-    // If not saved yet, calculate on the fly
-    if (!savedMacros && window.FitnessCalc) {
-      savedMacros = FitnessCalc.calcMacros(activeCals, goalType);
-    }
-    const macroGoals = savedMacros || { protein: 120, carbs: 150, fat: 50 };
+    const macroGoals = calcMacros(goal, goalType);
     ['protein', 'carbs', 'fat'].forEach(function(m) {
       const bar = document.getElementById('bar-' + m);
       const val = document.getElementById('val-' + m);

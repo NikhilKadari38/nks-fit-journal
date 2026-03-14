@@ -439,11 +439,10 @@ window.FitnessCalc = {
       full:     Math.round(bmr * 1.725 + sign * adjustment),
     };
   },
-  // Macro splits per goal type
-  // Lose:     40% protein, 30% carbs, 30% fat  (preserve muscle while cutting)
-  // Gain:     30% protein, 45% carbs, 25% fat  (fuel muscle growth)
-  // Maintain: 30% protein, 40% carbs, 30% fat  (balanced)
-  // Macro splits: lose = 35/25/40 (P/F/C), gain = 25/25/50 (P/F/C), maintain = 30/25/45
+  // Macro splits (Protein / Fat / Carbs %)
+  // Lose:     35 / 25 / 40
+  // Gain:     25 / 25 / 50
+  // Maintain: 30 / 25 / 45
   calcMacros: (calories, goalType) => {
     const splits = goalType === 'gain'
       ? { protein: 0.25, fat: 0.25, carbs: 0.50 }

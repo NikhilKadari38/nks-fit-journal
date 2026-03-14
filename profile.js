@@ -7,7 +7,7 @@ const ProfilePage = (() => {
   const DEFAULTS = {
     name: 'Nikhil Kadari', dob: '2000-01-03',
     weight: 76, height: 160, goalWeight: 65,
-    goalType: 'lose',
+    goalType: null,
     dietaryPref: 'veg', caloriesRest: 1462, caloriesWorkout: 2034,
     waterGoal: 3000, activityLevel: 'moderate'
   };
@@ -52,14 +52,12 @@ const ProfilePage = (() => {
       const key = f.replace(/-./g, m => m[1].toUpperCase());
       if (el && profile[key] !== undefined) el.value = profile[key];
     });
-    // Auto-detect goalType from weights if user never set it manually
-    if (!NKStorage.getProfile()?.goalType) {
-      const goalTypeEl = document.getElementById('p-goal-type');
-      if (goalTypeEl) {
-        if (profile.weight < profile.goalWeight) goalTypeEl.value = 'gain';
-        else if (profile.weight > profile.goalWeight) goalTypeEl.value = 'lose';
-        else goalTypeEl.value = 'maintain';
-      }
+    // Always sync the dropdown to match the actual weights
+    const goalTypeEl = document.getElementById('p-goal-type');
+    if (goalTypeEl) {
+      if (profile.weight < profile.goalWeight) goalTypeEl.value = 'gain';
+      else if (profile.weight > profile.goalWeight) goalTypeEl.value = 'lose';
+      else goalTypeEl.value = 'maintain';
     }
     renderProfileDisplay(profile);
   };
@@ -68,7 +66,8 @@ const ProfilePage = (() => {
     const age = calcAge(profile.dob || DEFAULTS.dob);
     const bmi = calcBMI(profile.weight, profile.height);
     const bmr = calcBMR(profile.weight, profile.height, age);
-    const goalType = profile.goalType || (profile.weight > profile.goalWeight ? 'lose' : profile.weight < profile.goalWeight ? 'gain' : 'maintain');
+    // Always derive from weights — stored value may be stale/wrong
+    const goalType = (profile.weight < profile.goalWeight) ? 'gain' : (profile.weight > profile.goalWeight) ? 'lose' : 'maintain';
     const toGoal = Utils.round1(Math.abs(profile.weight - profile.goalWeight));
 
     // Update avatar initials dynamically
@@ -144,14 +143,12 @@ const ProfilePage = (() => {
       if (profile.height < 100 || profile.height > 250) { Toast.error('Enter a valid height (cm)'); return; }
 
       NKStorage.setProfile(profile);
-      // Auto-detect goalType from weights if user never set it manually
-    if (!NKStorage.getProfile()?.goalType) {
-      const goalTypeEl = document.getElementById('p-goal-type');
-      if (goalTypeEl) {
-        if (profile.weight < profile.goalWeight) goalTypeEl.value = 'gain';
-        else if (profile.weight > profile.goalWeight) goalTypeEl.value = 'lose';
-        else goalTypeEl.value = 'maintain';
-      }
+      // Always sync the dropdown to match the actual weights
+    const goalTypeEl = document.getElementById('p-goal-type');
+    if (goalTypeEl) {
+      if (profile.weight < profile.goalWeight) goalTypeEl.value = 'gain';
+      else if (profile.weight > profile.goalWeight) goalTypeEl.value = 'lose';
+      else goalTypeEl.value = 'maintain';
     }
     renderProfileDisplay(profile);
       renderStats();

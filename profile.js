@@ -49,6 +49,20 @@ const ProfilePage = (() => {
     if (adjLabel) adjLabel.textContent = goalType === 'gain'
       ? '📈 Daily Calorie Surplus'
       : '📉 Daily Calorie Deficit';
+
+    // Show macro preview
+    const macros = FitnessCalc.calcMacros(targets.rest, goalType);
+    const macroPreviewEl = document.getElementById('macro-preview');
+    if (macroPreviewEl) {
+      const split = goalType === 'gain' ? '30/45/25' : goalType === 'lose' ? '40/30/30' : '30/40/30';
+      macroPreviewEl.innerHTML =
+        '<div style="font-size:0.78rem;color:var(--text-muted);margin-top:8px">'
+        + '📊 Rest day macros (' + split + '% P/C/F): '
+        + '<span style="color:#3B82F6;font-weight:600">' + macros.protein + 'g protein</span> · '
+        + '<span style="color:#A78BFA;font-weight:600">' + macros.carbs + 'g carbs</span> · '
+        + '<span style="color:#FB923C;font-weight:600">' + macros.fat + 'g fat</span>'
+        + '</div>';
+    }
   };
 
   const init = () => {
@@ -354,6 +368,20 @@ const AdminPanel = (() => {
     if (adjLabel) adjLabel.textContent = goalType === 'gain'
       ? '📈 Daily Calorie Surplus'
       : '📉 Daily Calorie Deficit';
+
+    // Show macro preview
+    const macros = FitnessCalc.calcMacros(targets.rest, goalType);
+    const macroPreviewEl = document.getElementById('macro-preview');
+    if (macroPreviewEl) {
+      const split = goalType === 'gain' ? '30/45/25' : goalType === 'lose' ? '40/30/30' : '30/40/30';
+      macroPreviewEl.innerHTML =
+        '<div style="font-size:0.78rem;color:var(--text-muted);margin-top:8px">'
+        + '📊 Rest day macros (' + split + '% P/C/F): '
+        + '<span style="color:#3B82F6;font-weight:600">' + macros.protein + 'g protein</span> · '
+        + '<span style="color:#A78BFA;font-weight:600">' + macros.carbs + 'g carbs</span> · '
+        + '<span style="color:#FB923C;font-weight:600">' + macros.fat + 'g fat</span>'
+        + '</div>';
+    }
   };
 
   const init = () => {
@@ -388,6 +416,22 @@ window.FitnessCalc = {
       full:     Math.round(bmr * 1.725 + sign * adjustment),
     };
   },
+  // Macro splits per goal type
+  // Lose:     40% protein, 30% carbs, 30% fat  (preserve muscle while cutting)
+  // Gain:     30% protein, 45% carbs, 25% fat  (fuel muscle growth)
+  // Maintain: 30% protein, 40% carbs, 30% fat  (balanced)
+  calcMacros: (calories, goalType) => {
+    const splits = goalType === 'gain'
+      ? { protein: 0.30, carbs: 0.45, fat: 0.25 }
+      : goalType === 'lose'
+      ? { protein: 0.40, carbs: 0.30, fat: 0.30 }
+      : { protein: 0.30, carbs: 0.40, fat: 0.30 };
+    return {
+      protein: Math.round((calories * splits.protein) / 4),
+      carbs:   Math.round((calories * splits.carbs)   / 4),
+      fat:     Math.round((calories * splits.fat)     / 9),
+    };
+  },
   recalcAndSave: (newWeight) => {
     const profile = NKStorage.getProfile() || {};
     if (!profile.height || !profile.dob) return; // can't calc without height/dob
@@ -402,8 +446,12 @@ window.FitnessCalc = {
     profile.caloriesModerate = targets.moderate;
     profile.caloriesWorkout  = targets.full;
     profile.goalType         = goalType;
+    // Calculate and save macros for each day type
+    profile.macrosRest     = FitnessCalc.calcMacros(targets.rest,     goalType);
+    profile.macrosModerate = FitnessCalc.calcMacros(targets.moderate, goalType);
+    profile.macrosFull     = FitnessCalc.calcMacros(targets.full,     goalType);
     NKStorage.setProfile(profile);
-    return { bmr, targets, goalType };
+    return { bmr, targets, goalType, macros: profile.macrosRest };
   }
 };
 

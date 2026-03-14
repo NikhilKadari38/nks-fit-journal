@@ -9,8 +9,7 @@ const Dashboard = (() => {
     weight: 70, goalWeight: 65, goalType: 'lose',
     caloriesRest: 1800, caloriesModerate: 2200, caloriesWorkout: 2500,
     waterGoalMl: 3000,
-    protein: 120, carbsRest: 150, carbsWorkout: 220,
-    fatRest: 50, fatWorkout: 60
+    // Macros calculated dynamically from calorie targets — no hardcoded values
   };
 
   let today, dayType, todayLog, waterMl;
@@ -151,11 +150,17 @@ const Dashboard = (() => {
     if (calGoalStat) calGoalStat.innerHTML = goal.toLocaleString() + '<span class="stat-unit">kcal</span>';
 
     // Macro bars — use profile macros
-    const macroGoals = {
-      protein: p.protein,
-      carbs:   dayType === 'rest' ? p.carbsRest : p.carbsWorkout,
-      fat:     dayType === 'rest' ? p.fatRest   : p.fatWorkout
-    };
+    // Get macros from saved profile or calculate dynamically
+    const goalType = p.goalType || 'lose';
+    const activeCals = goal; // already resolved above based on dayType
+    let savedMacros = dayType === 'full' ? p.macrosFull
+                    : dayType === 'moderate' ? p.macrosModerate
+                    : p.macrosRest;
+    // If not saved yet, calculate on the fly
+    if (!savedMacros && window.FitnessCalc) {
+      savedMacros = FitnessCalc.calcMacros(activeCals, goalType);
+    }
+    const macroGoals = savedMacros || { protein: 120, carbs: 150, fat: 50 };
     ['protein', 'carbs', 'fat'].forEach(function(m) {
       const bar = document.getElementById('bar-' + m);
       const val = document.getElementById('val-' + m);
@@ -294,8 +299,9 @@ const Dashboard = (() => {
 
       if (result) {
         const goalLabel = result.goalType === 'gain' ? '📈 Weight Gain' : result.goalType === 'lose' ? '📉 Weight Loss' : '⚖️ Maintain';
+        const m = result.macros;
         Toast.success('✅ Weight saved! BMR: ' + result.bmr + ' kcal · ' + goalLabel
-          + ' · Rest: ' + result.targets.rest + ' kcal');
+          + ' · P:' + m.protein + 'g C:' + m.carbs + 'g F:' + m.fat + 'g');
       } else {
         // FitnessCalc not available (profile.js not loaded) — just save weight
         const profile = NKStorage.getProfile() || {};

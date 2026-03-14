@@ -285,12 +285,29 @@ const Dashboard = (() => {
     if (btn) btn.onclick = function() {
       const val = parseFloat(input ? input.value : 0);
       if (!val || val < 20 || val > 300) { Toast.error('Please enter a valid weight (20–300 kg)'); return; }
-      const profile = NKStorage.getProfile() || {};
-      profile.weight = val;
-      NKStorage.setProfile(profile);
+
+      // Save daily weight log
       NKStorage.setWeight(today, val);
+
+      // Recalculate BMR + calorie targets and save to profile
+      const result = window.FitnessCalc ? window.FitnessCalc.recalcAndSave(val) : null;
+
+      if (result) {
+        const goalLabel = result.goalType === 'gain' ? '📈 Weight Gain' : result.goalType === 'lose' ? '📉 Weight Loss' : '⚖️ Maintain';
+        Toast.success('✅ Weight saved! BMR: ' + result.bmr + ' kcal · ' + goalLabel
+          + ' · Rest: ' + result.targets.rest + ' kcal');
+      } else {
+        // FitnessCalc not available (profile.js not loaded) — just save weight
+        const profile = NKStorage.getProfile() || {};
+        profile.weight = val;
+        NKStorage.setProfile(profile);
+        Toast.success('✅ Weight saved: ' + val + ' kg');
+      }
+
+      // Refresh dashboard display
       renderGoalProgress();
-      Toast.success('✅ Weight saved: ' + val + ' kg');
+      renderWorkoutToggle();
+      renderSummary();
     };
   };
 

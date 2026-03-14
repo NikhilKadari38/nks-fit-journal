@@ -368,6 +368,45 @@ const AdminPanel = (() => {
   return { init, loadUsers, confirmDelete };
 })();
 
+// Expose BMR calc functions globally for use in dashboard.js
+window.FitnessCalc = {
+  calcAge: (dob) => {
+    const birth = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  },
+  calcBMI: (weight, height) => Utils.round1(weight / ((height/100) ** 2)),
+  calcBMR: (weight, height, age) => Math.round(10*weight + 6.25*height - 5*age + 5),
+  calcCaloriesFromBMR: (bmr, adjustment, goalType) => {
+    const sign = (goalType === 'gain') ? 1 : -1;
+    return {
+      rest:     Math.round(bmr * 1.2   + sign * adjustment),
+      moderate: Math.round(bmr * 1.55  + sign * adjustment),
+      full:     Math.round(bmr * 1.725 + sign * adjustment),
+    };
+  },
+  recalcAndSave: (newWeight) => {
+    const profile = NKStorage.getProfile() || {};
+    if (!profile.height || !profile.dob) return; // can't calc without height/dob
+    profile.weight = newWeight;
+    const age = FitnessCalc.calcAge(profile.dob);
+    const bmr = FitnessCalc.calcBMR(newWeight, profile.height, age);
+    const goalType = (newWeight < profile.goalWeight) ? 'gain'
+                   : (newWeight > profile.goalWeight) ? 'lose' : 'maintain';
+    const adj = profile.calAdjustment || 500;
+    const targets = FitnessCalc.calcCaloriesFromBMR(bmr, adj, goalType);
+    profile.caloriesRest     = targets.rest;
+    profile.caloriesModerate = targets.moderate;
+    profile.caloriesWorkout  = targets.full;
+    profile.goalType         = goalType;
+    NKStorage.setProfile(profile);
+    return { bmr, targets, goalType };
+  }
+};
+
 window.AdminPanel = AdminPanel;
 
 document.addEventListener('DOMContentLoaded', async () => {

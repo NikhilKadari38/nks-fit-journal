@@ -134,15 +134,15 @@
           <!-- Goal Progress -->
           <div class="goal-progress-wrap anim-fade-in">
             <div class="goal-row">
-              <span class="goal-label">🎯 Weight Goal Progress</span>
+              <span class="goal-label" id="goal-progress-label">🎯 Weight Goal Progress</span>
               <span class="goal-pct" id="goal-pct">0% complete</span>
             </div>
             <div class="d-flex justify-between align-center mb-8">
-              <span style="font-size:0.82rem;color:var(--text-muted)" id="weight-lost">-- kg lost</span>
+              <span style="font-size:0.82rem;color:var(--text-muted)" id="weight-changed">-- kg</span>
               <div class="goal-weights">
                 <span class="goal-current" id="current-weight">76 kg</span>
                 <span class="goal-arrow"> → </span>
-                <span class="goal-target">65 kg</span>
+                <span class="goal-target" id="goal-target-weight">-- kg</span>
               </div>
             </div>
             <div class="progress-wrap goal-bar-wrap" style="height:12px">

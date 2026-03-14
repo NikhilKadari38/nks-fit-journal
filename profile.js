@@ -7,6 +7,7 @@ const ProfilePage = (() => {
   const DEFAULTS = {
     name: 'Nikhil Kadari', dob: '2000-01-03',
     weight: 76, height: 160, goalWeight: 65,
+    goalType: 'lose',
     dietaryPref: 'veg', caloriesRest: 1462, caloriesWorkout: 2034,
     waterGoal: 3000, activityLevel: 'moderate'
   };
@@ -45,7 +46,7 @@ const ProfilePage = (() => {
       }
     }
     const profile = { ...DEFAULTS, ...NKStorage.getProfile() };
-    const fields = ['name','dob','weight','height','goal-weight','dietary-pref','calories-rest','calories-workout','water-goal'];
+    const fields = ['name','dob','weight','height','goal-weight','goal-type','dietary-pref','calories-rest','calories-workout','water-goal'];
     fields.forEach(f => {
       const el = document.getElementById('p-' + f);
       const key = f.replace(/-./g, m => m[1].toUpperCase());
@@ -58,7 +59,8 @@ const ProfilePage = (() => {
     const age = calcAge(profile.dob || DEFAULTS.dob);
     const bmi = calcBMI(profile.weight, profile.height);
     const bmr = calcBMR(profile.weight, profile.height, age);
-    const toGoal = Utils.round1(profile.weight - profile.goalWeight);
+    const goalType = profile.goalType || (profile.weight > profile.goalWeight ? 'lose' : profile.weight < profile.goalWeight ? 'gain' : 'maintain');
+    const toGoal = Utils.round1(Math.abs(profile.weight - profile.goalWeight));
 
     // Update avatar initials dynamically
     const avatarEl = document.getElementById('avatar-initials');
@@ -76,7 +78,10 @@ const ProfilePage = (() => {
       'display-bmi': bmi,
       'display-bmr': bmr + ' kcal',
       'display-goal': profile.goalWeight + ' kg',
-      'display-to-goal': (toGoal > 0 ? toGoal + ' kg to lose' : '🎉 Goal reached!'),
+      'display-to-goal': toGoal === 0 ? '🎉 Goal reached!' :
+        goalType === 'lose' ? toGoal + ' kg to lose' :
+        goalType === 'gain' ? toGoal + ' kg to gain' :
+        '⚖️ Maintaining',
       'display-diet': profile.dietaryPref === 'veg' ? '🌱 Vegetarian' : profile.dietaryPref === 'nonveg' ? '🍗 Non-Vegetarian' : '🌿 Vegan',
       'display-cal-rest': profile.caloriesRest + ' kcal',
       'display-cal-workout': profile.caloriesWorkout + ' kcal',
@@ -92,6 +97,12 @@ const ProfilePage = (() => {
     const bmiEl = document.getElementById('display-bmi');
     if (bmiEl) {
       bmiEl.style.color = bmi < 18.5 ? 'var(--info)' : bmi < 25 ? 'var(--success)' : bmi < 30 ? 'var(--warning)' : 'var(--error)';
+    }
+
+    // To Goal label
+    const toGoalLabelEl = document.getElementById('to-goal-label');
+    if (toGoalLabelEl) {
+      toGoalLabelEl.textContent = goalType === 'lose' ? 'To Lose' : goalType === 'gain' ? 'To Gain' : 'Goal';
     }
 
     // BMI label
@@ -112,6 +123,7 @@ const ProfilePage = (() => {
         weight: parseFloat(document.getElementById('p-weight')?.value) || DEFAULTS.weight,
         height: parseFloat(document.getElementById('p-height')?.value) || DEFAULTS.height,
         goalWeight: parseFloat(document.getElementById('p-goal-weight')?.value) || DEFAULTS.goalWeight,
+        goalType: document.getElementById('p-goal-type')?.value || DEFAULTS.goalType,
         dietaryPref: document.getElementById('p-dietary-pref')?.value || DEFAULTS.dietaryPref,
         caloriesRest: parseInt(document.getElementById('p-calories-rest')?.value) || DEFAULTS.caloriesRest,
         caloriesWorkout: parseInt(document.getElementById('p-calories-workout')?.value) || DEFAULTS.caloriesWorkout,

@@ -32,6 +32,7 @@ const Dashboard = (() => {
   const renderWorkoutToggle = () => {
     const btn = document.getElementById('workout-toggle-btn');
     const label = document.getElementById('workout-toggle-label');
+    const goalType2 = (NKStorage.getProfile() || {}).goalType || 'lose';
     const calLabel = document.getElementById('cal-goal-label');
     if (!btn) return;
     btn.className = `toggle-btn ${isWorkout ? 'active' : ''}`;
@@ -57,7 +58,8 @@ const Dashboard = (() => {
   const renderSummary = () => {
     const totals = getTotals();
     const goal = isWorkout ? PROFILE.caloriesWorkout : PROFILE.caloriesRest;
-    const remaining = Math.max(0, goal - totals.calories);
+    const goalType3 = (NKStorage.getProfile() || {}).goalType || 'lose';
+    const remaining = Math.abs(goal - totals.calories);
     const eaten = Utils.round1(totals.calories);
 
     // Calories eaten
@@ -93,19 +95,52 @@ const Dashboard = (() => {
 
   const renderGoalProgress = () => {
     const profile = NKStorage.getProfile() || {};
-    const currentWeight = profile.weight || PROFILE.startWeight;
-    const diff = PROFILE.startWeight - PROFILE.goalWeight;
-    const lost = Utils.round1(PROFILE.startWeight - currentWeight);
-    const pct = Utils.clamp(Math.round((lost / diff) * 100), 0, 100);
+    const startWeight = profile.weight || PROFILE.startWeight;
+    const goalWeight = profile.goalWeight || PROFILE.goalWeight;
+    const goalType = profile.goalType || (startWeight > goalWeight ? 'lose' : startWeight < goalWeight ? 'gain' : 'maintain');
+
+    // Get latest logged weight if available
+    const allWeights = NKStorage.getAllWeights();
+    const currentWeight = allWeights.length > 0
+      ? allWeights[allWeights.length - 1].weight
+      : startWeight;
+
+    const totalDiff = Math.abs(startWeight - goalWeight);
+    const changed = Utils.round1(Math.abs(startWeight - currentWeight));
+
+    // Progress % — how much of the gap has been closed
+    let pct = 0;
+    if (totalDiff > 0) {
+      if (goalType === 'lose') {
+        pct = Utils.clamp(Math.round(((startWeight - currentWeight) / totalDiff) * 100), 0, 100);
+      } else if (goalType === 'gain') {
+        pct = Utils.clamp(Math.round(((currentWeight - startWeight) / totalDiff) * 100), 0, 100);
+      } else {
+        pct = 100; // maintain = already there
+      }
+    }
 
     const bar = document.getElementById('goal-bar');
     const pctEl = document.getElementById('goal-pct');
     const currWtEl = document.getElementById('current-weight');
-    const lostEl = document.getElementById('weight-lost');
+    const changedEl = document.getElementById('weight-changed');
+    const targetEl = document.getElementById('goal-target-weight');
+    const labelEl = document.getElementById('goal-progress-label');
+
     if (bar) bar.style.width = pct + '%';
     if (pctEl) pctEl.textContent = pct + '% complete';
     if (currWtEl) currWtEl.textContent = currentWeight + ' kg';
-    if (lostEl) lostEl.textContent = Math.max(0, lost) + ' kg lost';
+    if (targetEl) targetEl.textContent = goalWeight + ' kg';
+    if (changedEl) {
+      if (goalType === 'lose') changedEl.textContent = changed + ' kg lost';
+      else if (goalType === 'gain') changedEl.textContent = changed + ' kg gained';
+      else changedEl.textContent = '⚖️ Maintaining';
+    }
+    if (labelEl) {
+      if (goalType === 'lose') labelEl.textContent = '📉 Weight Loss Progress';
+      else if (goalType === 'gain') labelEl.textContent = '📈 Weight Gain Progress';
+      else labelEl.textContent = '⚖️ Weight Maintenance';
+    }
   };
 
   const renderWater = () => {

@@ -1,358 +1,146 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23E50914'/><text x='50' y='68' font-size='45' font-weight='bold' text-anchor='middle' fill='white' font-family='serif'>NK</text></svg>"
-    />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NK's Fit Journal — Your Personal Fitness Tracker</title>
-    <meta
-      name="description"
-      content="Track your calories, macros, water intake, and weight loss journey with NK's Fit Journal"
-    />
-    <link rel="stylesheet" href="main.css" />
-    <link rel="stylesheet" href="components.css" />
-    <style>
-      .hero {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 24px;
-        position: relative;
-      }
-      .hero-content {
-        max-width: 720px;
-        animation: heroIn 1s cubic-bezier(0.4, 0, 0.2, 1) both;
-      }
-      @keyframes heroIn {
-        from {
-          opacity: 0;
-          transform: translateY(40px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      .hero-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 20px;
-        background: rgba(229, 9, 20, 0.1);
-        border: 1px solid rgba(229, 9, 20, 0.25);
-        border-radius: 999px;
-        font-size: 0.82rem;
-        font-weight: 600;
-        color: var(--accent-primary);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        margin-bottom: 28px;
-        animation: heroIn 0.8s 0.1s both;
-      }
-      [data-theme="dark"] .hero-badge {
-        background: rgba(0, 122, 204, 0.12);
-        border-color: rgba(0, 122, 204, 0.3);
-        color: var(--accent-primary);
-      }
-      .hero-title {
-        font-family: var(--heading-font);
-        font-size: clamp(2.8rem, 8vw, 5.5rem);
-        font-weight: 900;
-        line-height: 1.05;
-        margin-bottom: 20px;
-        animation: heroIn 0.8s 0.2s both;
-      }
-      .hero-title .brand {
-        display: block;
-        background: linear-gradient(
-          135deg,
-          var(--accent-primary),
-          var(--accent-orange),
-          var(--accent-amber)
-        );
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-      [data-theme="dark"] .hero-title .brand {
-        background: linear-gradient(135deg, #007acc, #4ec9b0, #c586c0);
-        -webkit-background-clip: text;
-        background-clip: text;
-      }
-      .hero-sub {
-        font-size: clamp(1rem, 2.5vw, 1.25rem);
-        color: var(--text-secondary);
-        max-width: 520px;
-        margin: 0 auto 40px;
-        line-height: 1.7;
-        animation: heroIn 0.8s 0.3s both;
-      }
-      .hero-btns {
-        display: flex;
-        gap: 16px;
-        justify-content: center;
-        flex-wrap: wrap;
-        animation: heroIn 0.8s 0.4s both;
-      }
-      .btn-enter {
-        padding: 18px 52px;
-        font-size: 1.05rem;
-        font-weight: 700;
-        background: linear-gradient(
-          135deg,
-          var(--accent-primary),
-          var(--accent-orange)
-        );
-        color: white;
-        border: none;
-        border-radius: var(--radius-pill);
-        cursor: pointer;
-        text-decoration: none;
-        box-shadow: 0 8px 32px rgba(229, 9, 20, 0.35);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-      }
-      .btn-enter:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 12px 40px rgba(229, 9, 20, 0.5);
-      }
-      .btn-enter::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          135deg,
-          transparent 0%,
-          rgba(255, 255, 255, 0.15) 50%,
-          transparent 100%
-        );
-        transform: translateX(-100%);
-        transition: transform 0.5s ease;
-      }
-      .btn-enter:hover::before {
-        transform: translateX(100%);
-      }
-      [data-theme="dark"] .btn-enter {
-        background: linear-gradient(135deg, #007acc, #4ec9b0);
-        box-shadow: 0 8px 32px rgba(0, 122, 204, 0.4);
-      }
-      [data-theme="dark"] .btn-enter:hover {
-        box-shadow: 0 12px 40px rgba(0, 122, 204, 0.6);
-      }
-      .features-row {
-        display: flex;
-        gap: 24px;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-top: 56px;
-        animation: heroIn 0.8s 0.5s both;
-      }
-      .feature-chip {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 18px;
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-pill);
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: var(--text-secondary);
-        backdrop-filter: blur(12px);
-      }
-      .hero-scroll {
-        position: absolute;
-        bottom: 32px;
-        left: 50%;
-        transform: translateX(-50%);
-        animation: float 2s infinite;
-        font-size: 1.5rem;
-        opacity: 0.4;
-      }
-      @keyframes float {
-        0%,
-        100% {
-          transform: translateX(-50%) translateY(0);
-        }
-        50% {
-          transform: translateX(-50%) translateY(-8px);
-        }
-      }
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NK's Fit Journal — Your Personal Fitness Tracker</title>
+  <meta name="description" content="Track your calories, macros, water intake, and fitness journey with NK's Fit Journal"/>
+  <link rel="stylesheet" href="main.css"/>
+  <link rel="stylesheet" href="components.css"/>
+  <style>
+    .hero { min-height: 100vh; display:flex; align-items:center; justify-content:center; text-align:center; padding: 24px; position:relative; }
+    .hero-content { max-width: 720px; animation: heroIn 1s cubic-bezier(0.4,0,0.2,1) both; }
+    @keyframes heroIn { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
+    .hero-badge { display:inline-flex; align-items:center; gap:8px; padding:8px 20px; background:rgba(229,9,20,0.1); border:1px solid rgba(229,9,20,0.25); border-radius:999px; font-size:0.82rem; font-weight:600; color:var(--accent-primary); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:28px; animation: heroIn 0.8s 0.1s both; }
+    [data-theme="dark"] .hero-badge { background:rgba(0,122,204,0.12); border-color:rgba(0,122,204,0.3); color:var(--accent-primary); }
+    .hero-title { font-family:var(--heading-font); font-size:clamp(2.8rem,8vw,5.5rem); font-weight:900; line-height:1.05; margin-bottom:20px; animation: heroIn 0.8s 0.2s both; }
+    .hero-title .brand { display:block; background:linear-gradient(135deg,var(--accent-primary),var(--accent-orange),var(--accent-amber)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    [data-theme="dark"] .hero-title .brand { background:linear-gradient(135deg,#007ACC,#4EC9B0,#C586C0); -webkit-background-clip:text; background-clip:text; }
+    .hero-sub { font-size:clamp(1rem,2.5vw,1.25rem); color:var(--text-secondary); max-width:520px; margin:0 auto 40px; line-height:1.7; animation: heroIn 0.8s 0.3s both; }
+    .hero-btns { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; animation: heroIn 0.8s 0.4s both; }
+    .btn-enter {
+      padding:18px 52px; font-size:1.05rem; font-weight:700;
+      background:linear-gradient(135deg, var(--accent-primary), var(--accent-orange));
+      color:white; border:none; border-radius:var(--radius-pill);
+      cursor:pointer; text-decoration:none;
+      box-shadow:0 8px 32px rgba(229,9,20,0.35);
+      transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+      position:relative; overflow:hidden;
+    }
+    .btn-enter:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 12px 40px rgba(229,9,20,0.5); }
+    .btn-enter::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,transparent 0%,rgba(255,255,255,0.15) 50%,transparent 100%); transform:translateX(-100%); transition:transform 0.5s ease; }
+    .btn-enter:hover::before { transform:translateX(100%); }
+    [data-theme="dark"] .btn-enter { background:linear-gradient(135deg,#007ACC,#4EC9B0); box-shadow:0 8px 32px rgba(0,122,204,0.4); }
+    [data-theme="dark"] .btn-enter:hover { box-shadow:0 12px 40px rgba(0,122,204,0.6); }
+    .features-row { display:flex; gap:24px; justify-content:center; flex-wrap:wrap; margin-top:56px; animation: heroIn 0.8s 0.5s both; }
+    .feature-chip { display:flex; align-items:center; gap:8px; padding:10px 18px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-pill); font-size:0.85rem; font-weight:500; color:var(--text-secondary); backdrop-filter:blur(12px); }
+    .hero-scroll { position:absolute; bottom:32px; left:50%; transform:translateX(-50%); animation:float 2s infinite; font-size:1.5rem; opacity:0.4; }
+    @keyframes float { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-8px)} }
 
-      /* Nav on landing page - no bg needed initially */
-      .navbar {
-        background: transparent;
-        border-bottom-color: transparent;
-      }
-      .navbar.scrolled {
-        background: var(--bg-glass);
-        border-bottom-color: var(--border-color);
-      }
-    </style>
-  </head>
-  <body>
-    <canvas id="bg-canvas"></canvas>
-    <div class="site-wrapper">
-      <!-- Navbar -->
-      <nav class="navbar" id="main-nav">
-        <div class="navbar-inner">
-          <a href="index.html" class="nav-brand">
-            <div class="nav-logo">NK</div>
-            <span class="nav-brand-name"><span>NK's</span> Fit Journal</span>
-          </a>
-          <ul class="nav-links">
-            <li>
-              <a href="index.html" class="nav-link active"
-                ><span class="nav-icon">🏠</span>Home</a
-              >
-            </li>
-            <li>
-              <a href="dashboard.html" class="nav-link"
-                ><span class="nav-icon">📊</span>Dashboard</a
-              >
-            </li>
-            <li>
-              <a href="foodlog.html" class="nav-link"
-                ><span class="nav-icon">🍽️</span>Food Log</a
-              >
-            </li>
-            <li>
-              <a href="database.html" class="nav-link"
-                ><span class="nav-icon">🗄️</span>Database</a
-              >
-            </li>
-            <li>
-              <a href="progress.html" class="nav-link"
-                ><span class="nav-icon">📈</span>Progress</a
-              >
-            </li>
-            <li>
-              <a href="profile.html" class="nav-link"
-                ><span class="nav-icon">👤</span>Profile</a
-              >
-            </li>
-          </ul>
-          <div class="nav-actions">
-            <button class="theme-toggle" aria-label="Toggle theme">
-              <div class="theme-toggle-track">
-                <div class="theme-toggle-thumb">
-                  <span class="theme-toggle-sun">☀️</span>
-                  <span class="theme-toggle-moon">🌙</span>
-                </div>
-              </div>
-            </button>
-            <button class="btn-logout" onclick="Auth.logout()" title="Logout">
-              🚪 Logout
-            </button>
-            <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
-              <span></span><span></span><span></span>
-            </button>
+    /* Nav on landing page - no bg needed initially */
+    .navbar { background: transparent; border-bottom-color:transparent; }
+    .navbar.scrolled { background:var(--bg-glass); border-bottom-color:var(--border-color); }
+  </style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="site-wrapper">
+  <!-- Navbar -->
+  <nav class="navbar" id="main-nav">
+    <div class="navbar-inner">
+      <a href="index.html" class="nav-brand">
+        <div class="nav-logo">NK</div>
+        <span class="nav-brand-name"><span>NK's</span> Fit Journal</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link active"><span class="nav-icon">🏠</span>Home</a></li>
+        <li><a href="dashboard.html" class="nav-link"><span class="nav-icon">📊</span>Dashboard</a></li>
+        <li><a href="foodlog.html" class="nav-link"><span class="nav-icon">🍽️</span>Food Log</a></li>
+        <li><a href="database.html" class="nav-link"><span class="nav-icon">🗄️</span>Database</a></li>
+        <li><a href="progress.html" class="nav-link"><span class="nav-icon">📈</span>Progress</a></li>
+        <li><a href="profile.html" class="nav-link"><span class="nav-icon">👤</span>Profile</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle" aria-label="Toggle theme">
+          <div class="theme-toggle-track">
+            <div class="theme-toggle-thumb">
+              <span class="theme-toggle-sun">☀️</span>
+              <span class="theme-toggle-moon">🌙</span>
+            </div>
           </div>
-        </div>
-      </nav>
-      <div class="nav-mobile" id="nav-mobile">
-        <ul class="nav-links">
-          <li>
-            <a href="index.html" class="nav-link active"
-              ><span class="nav-icon">🏠</span>Home</a
-            >
-          </li>
-          <li>
-            <a href="dashboard.html" class="nav-link"
-              ><span class="nav-icon">📊</span>Dashboard</a
-            >
-          </li>
-          <li>
-            <a href="foodlog.html" class="nav-link"
-              ><span class="nav-icon">🍽️</span>Food Log</a
-            >
-          </li>
-          <li>
-            <a href="database.html" class="nav-link"
-              ><span class="nav-icon">🗄️</span>Database</a
-            >
-          </li>
-          <li>
-            <a href="progress.html" class="nav-link"
-              ><span class="nav-icon">📈</span>Progress</a
-            >
-          </li>
-          <li>
-            <a href="profile.html" class="nav-link"
-              ><span class="nav-icon">👤</span>Profile</a
-            >
-          </li>
-        </ul>
+        </button>
+        <button class="btn-logout" onclick="Auth.logout()" title="Logout">🚪 Logout</button>
+        <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
       </div>
-
-      <!-- Hero -->
-      <section class="hero">
-        <div class="hero-content">
-          <div class="hero-badge">✦ Your Personal Fitness Journey</div>
-          <h1 class="hero-title">
-            Track. Eat.<br />
-            <span class="brand">Transform.</span>
-          </h1>
-          <p class="hero-sub">
-            NK's Fit Journal — your intelligent calorie tracker, macro analyzer,
-            and weight loss companion. Built for you. Ready for anyone.
-          </p>
-          <div class="hero-btns">
-            <a href="dashboard.html" class="btn-enter">Enter Journal →</a>
-            <a href="profile.html" class="btn btn-secondary btn-lg"
-              >Set Up Profile</a
-            >
-          </div>
-          <div class="features-row">
-            <div class="feature-chip">📊 Macro Tracking</div>
-            <div class="feature-chip">💧 Water Intake</div>
-            <div class="feature-chip">📈 Progress Charts</div>
-            <div class="feature-chip">🗄️ 75+ Foods</div>
-            <div class="feature-chip">🌙 Dark Mode</div>
-          </div>
-        </div>
-        <div class="hero-scroll">↓</div>
-      </section>
     </div>
+  </nav>
+  <div class="nav-mobile" id="nav-mobile">
+    <ul class="nav-links">
+      <li><a href="index.html" class="nav-link active"><span class="nav-icon">🏠</span>Home</a></li>
+      <li><a href="dashboard.html" class="nav-link"><span class="nav-icon">📊</span>Dashboard</a></li>
+      <li><a href="foodlog.html" class="nav-link"><span class="nav-icon">🍽️</span>Food Log</a></li>
+      <li><a href="database.html" class="nav-link"><span class="nav-icon">🗄️</span>Database</a></li>
+      <li><a href="progress.html" class="nav-link"><span class="nav-icon">📈</span>Progress</a></li>
+      <li><a href="profile.html" class="nav-link"><span class="nav-icon">👤</span>Profile</a></li>
+    </ul>
+  </div>
 
-    <div id="toast-container" class="toast-container"></div>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="firebase-config.js"></script>
-    <script src="auth.js"></script>
-    <script src="app.js"></script>
-    <script src="animations.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        BGAnim.init("index");
-        // Navbar scroll effect
-        const nav = document.getElementById("main-nav");
-        window.addEventListener("scroll", () =>
-          nav.classList.toggle("scrolled", window.scrollY > 20),
-        );
-      });
-    </script>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">✦ Your Personal Fitness Journey</div>
+      <h1 class="hero-title">
+        Track. Eat.<br/>
+        <span class="brand">Transform.</span>
+      </h1>
+      <p class="hero-sub">NK's Fit Journal — your intelligent calorie tracker, macro analyzer, and fitness companion. Whether you're losing, gaining, or maintaining — built for you. Ready for anyone.</p>
+      <div class="hero-btns">
+        <a href="dashboard.html" class="btn-enter">Enter Journal →</a>
+        <a href="profile.html" class="btn btn-secondary btn-lg">Set Up Profile</a>
+      </div>
+      <div class="features-row">
+        <div class="feature-chip">📊 Macro Tracking</div>
+        <div class="feature-chip">💧 Water Intake</div>
+        <div class="feature-chip">📈 Progress Charts</div>
+        <div class="feature-chip">🗄️ 75+ Foods</div>
+        <div class="feature-chip">🌙 Dark Mode</div>
+      </div>
+    </div>
+    <div class="hero-scroll">↓</div>
+  </section>
+</div>
 
-    <script>
-      // Auth guard
-      (function () {
-        const user = Auth.requireAuth();
-        if (!user) return;
-        // Show username in navbar
-        const el = document.createElement("span");
-        el.style.cssText =
-          "font-size:0.82rem;color:var(--text-muted);font-weight:600;padding:0 8px";
-        el.textContent = "👤 " + user;
-        const actions = document.querySelector(".nav-actions");
-        if (actions) actions.insertBefore(el, actions.firstChild);
-      })();
-    </script>
-  </body>
+<div id="toast-container" class="toast-container"></div>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+  <script src="auth.js"></script>
+<script src="app.js"></script>
+<script src="animations.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    BGAnim.init('index');
+    // Navbar scroll effect
+    const nav = document.getElementById('main-nav');
+    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 20));
+  });
+</script>
+
+<script>
+// Auth guard
+(function() {
+  const user = Auth.requireAuth();
+  if (!user) return;
+  // Show username in navbar
+  const el = document.createElement('span');
+  el.style.cssText = 'font-size:0.82rem;color:var(--text-muted);font-weight:600;padding:0 8px';
+  el.textContent = '👤 ' + user;
+  const actions = document.querySelector('.nav-actions');
+  if (actions) actions.insertBefore(el, actions.firstChild);
+})();
+</script>
+</body>
 </html>

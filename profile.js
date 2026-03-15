@@ -484,6 +484,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   BGAnim.init('profile');
   await syncFromCloud();
   ProfilePage.init();
+  SideFigures.init();
   AdminPanel.init();
 
   // Reveal content smoothly

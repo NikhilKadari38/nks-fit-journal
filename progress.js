@@ -250,4 +250,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   const pageContent = document.getElementById('page-content');
   if (loader) { loader.classList.add('hidden'); setTimeout(function() { loader.style.display='none'; }, 350); }
   if (pageContent) { requestAnimationFrame(function() { pageContent.classList.add('ready'); }); }
+  SideFigures.init();
 });

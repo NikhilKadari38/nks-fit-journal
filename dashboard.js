@@ -328,6 +328,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   BGAnim.init('dashboard');
   await syncFromCloud();
   Dashboard.init();
+  SideFigures.init();
 
   // Reveal content smoothly after all values are populated
   const loader = document.getElementById('page-loader');

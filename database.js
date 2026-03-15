@@ -256,6 +256,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   BGAnim.init('database');
   await syncFromCloud();
   FoodDatabase.init();
+  SideFigures.init();
 
   // Reveal content smoothly
   const loader = document.getElementById('page-loader');

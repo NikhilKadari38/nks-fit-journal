@@ -23,6 +23,13 @@
     .macro-gram { font-size:0.8rem; font-weight:600; }
     .log-scroll { max-height:380px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:4px 2px; }
     @media(max-width:900px) { .dashboard-grid{grid-template-columns:1fr} }
+    /* Smooth load */
+    .dashboard-content { opacity:0; transition:opacity 0.35s ease; }
+    .dashboard-content.ready { opacity:1; }
+    .page-loader { position:fixed;inset:0;z-index:9999;background:var(--bg-primary);display:flex;align-items:center;justify-content:center;transition:opacity 0.3s ease; }
+    .page-loader.hidden { opacity:0;pointer-events:none; }
+    .loader-spinner { width:36px;height:36px;border-radius:50%;border:3px solid var(--border-color);border-top-color:var(--accent-primary);animation:spin 0.7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
   </style>
   <style>
     .day-type-toggle { display:flex; gap:6px; }
@@ -38,7 +45,7 @@
     @media(max-width:500px) { .day-type-toggle { flex-wrap:wrap; } .day-type-btn { font-size:0.75rem; padding:6px 10px; } }
   </style>
 </head>
-<body>
+<body data-page="dashboard">
 <canvas id="bg-canvas"></canvas>
 <!-- Page loader — shown until data is ready -->
 <div class="page-loader" id="page-loader">

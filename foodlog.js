@@ -54,18 +54,18 @@ const FoodLog = (() => {
     const today = Utils.today();
 
     document.getElementById('date-prev')?.addEventListener('click', () => {
-      const d = new Date(activeDate);
+      const d = new Date(activeDate + 'T12:00:00'); // noon to avoid DST edge cases
       d.setDate(d.getDate() - 1);
-      activeDate = d.toISOString().split('T')[0];
+      activeDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
       renderDateNav();
       renderLog();
     });
 
     document.getElementById('date-next')?.addEventListener('click', () => {
       if (activeDate >= today) return;
-      const d = new Date(activeDate);
+      const d = new Date(activeDate + 'T12:00:00'); // noon to avoid DST edge cases
       d.setDate(d.getDate() + 1);
-      activeDate = d.toISOString().split('T')[0];
+      activeDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
       renderDateNav();
       renderLog();
     });
@@ -75,6 +75,10 @@ const FoodLog = (() => {
       const picker = document.getElementById('date-picker');
       if (picker) picker.showPicker?.() || picker.click();
     });
+
+    // Set max date on picker to today in user's timezone
+    const pickerInput = document.getElementById('date-picker');
+    if (pickerInput) pickerInput.max = today;
 
     document.getElementById('date-picker')?.addEventListener('change', (e) => {
       if (!e.target.value) return;
@@ -260,6 +264,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   BGAnim.init('foodlog');
   await syncFromCloud();
   FoodLog.init();
+  SideFigures.init();
 
   // Reveal content smoothly
   const loader = document.getElementById('page-loader');

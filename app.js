@@ -276,6 +276,62 @@ const WaterGlass = {
   }
 };
 
+
+// ── Side Body Figures ──
+const SideFigures = {
+  init: () => {
+    // Don't show on home/login pages
+    const page = document.body.dataset.page || '';
+    if (!page || page === 'home' || page === 'login') return;
+
+    const profile = window.NKStorage ? (NKStorage.getProfile() || {}) : {};
+    const goalType = (profile.weight && profile.goalWeight)
+      ? (profile.weight < profile.goalWeight ? 'gain'
+       : profile.weight > profile.goalWeight ? 'lose' : 'maintain')
+      : 'lose';
+
+    // Emojis: lean body vs muscled body
+    // Gain:  lean (left) → muscled (right) — showing the goal ahead
+    // Lose:  muscled (left) → lean (right) — showing the goal ahead
+    // Maintain: both balanced
+    let leftEmoji, rightEmoji, leftLabel, rightLabel;
+
+    if (goalType === 'gain') {
+      leftEmoji  = '🧍';  leftLabel  = 'Now';
+      rightEmoji = '🏋️'; rightLabel = 'Goal';
+    } else if (goalType === 'lose') {
+      leftEmoji  = '🏋️'; leftLabel  = 'Goal';
+      rightEmoji = '🧍';  rightLabel = 'Now';
+    } else {
+      leftEmoji  = '⚖️'; leftLabel  = 'Balance';
+      rightEmoji = '💪';  rightLabel = 'Maintain';
+    }
+
+    // Create left figure
+    const left = document.createElement('div');
+    left.className = 'side-figure side-figure-left';
+    left.innerHTML = '<div class="side-figure-emoji">' + leftEmoji + '</div>'
+      + '<div class="side-figure-label">' + leftLabel + '</div>'
+      + (goalType !== 'maintain' ? '<div class="side-figure-arrow">→</div>' : '');
+
+    // Create right figure
+    const right = document.createElement('div');
+    right.className = 'side-figure side-figure-right';
+    right.innerHTML = '<div class="side-figure-emoji">' + rightEmoji + '</div>'
+      + '<div class="side-figure-label">' + rightLabel + '</div>';
+
+    document.body.appendChild(left);
+    document.body.appendChild(right);
+
+    // Fade in after a short delay
+    setTimeout(() => {
+      left.classList.add('visible');
+      right.classList.add('visible');
+    }, 600);
+  }
+};
+window.SideFigures = SideFigures;
+
 // ── App Init ──
 document.addEventListener('DOMContentLoaded', () => {
   Theme.init();

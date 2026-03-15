@@ -297,22 +297,24 @@ const SideFigures = {
     let leftEmoji, rightEmoji, leftLabel, rightLabel;
 
     if (goalType === 'gain') {
-      leftEmoji  = '🧍';  leftLabel  = 'Now';
+      // Thin/weak (Now) → Bulk muscled (Goal)
+      leftEmoji  = '🧎';  leftLabel  = 'Now';
       rightEmoji = '🏋️'; rightLabel = 'Goal';
     } else if (goalType === 'lose') {
-      leftEmoji  = '🏋️'; leftLabel  = 'Goal';
-      rightEmoji = '🧍';  rightLabel = 'Now';
+      // Round/heavy (Now) → Lean running (Goal)
+      leftEmoji  = '🫃';  leftLabel  = 'Now';
+      rightEmoji = '🏃';  rightLabel = 'Goal';
     } else {
-      leftEmoji  = '⚖️'; leftLabel  = 'Balance';
-      rightEmoji = '💪';  rightLabel = 'Maintain';
+      // Maintain — balanced
+      leftEmoji  = '🧘'; leftLabel  = 'Now';
+      rightEmoji = '💪'; rightLabel = 'Goal';
     }
 
     // Create left figure
     const left = document.createElement('div');
     left.className = 'side-figure side-figure-left';
     left.innerHTML = '<div class="side-figure-emoji">' + leftEmoji + '</div>'
-      + '<div class="side-figure-label">' + leftLabel + '</div>'
-      + (goalType !== 'maintain' ? '<div class="side-figure-arrow">→</div>' : '');
+      + '<div class="side-figure-label">' + leftLabel + '</div>';
 
     // Create right figure
     const right = document.createElement('div');

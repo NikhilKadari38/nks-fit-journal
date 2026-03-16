@@ -729,15 +729,4 @@
 .food-db-table-header div:not(:nth-child(2)) { text-align:right; }
 .food-db-table-header div:nth-child(2) { text-align:left; }
 
-@media(max-width:768px) {
-  .food-db-row {
-    grid-template-columns: 16px 1fr 70px 50px 50px 50px;
-  }
-  .food-db-table-header {
-    grid-template-columns: 16px 1fr 70px 50px 50px 50px;
-  }
-  /* Hide unit and action columns on mobile */
-  .food-row-unit, .food-row-log-btn, .food-row-delete { display:none; }
-  .food-db-table-header div:nth-child(7),
-  .food-db-table-header div:nth-child(8) { display:none; }
-}
+/* Mobile table handled in database.html inline styles */

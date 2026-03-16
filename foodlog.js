@@ -157,9 +157,16 @@ const FoodLog = (() => {
     if (!searchEl) return;
 
     const render = () => {
-      const q = searchEl.value;
-      searchResults = FoodDB.searchFilter(q, currentFilter);
+      const q = searchEl.value.trim();
       if (!resultsEl) return;
+
+      // Only show results when user has typed something
+      if (!q) {
+        resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">🔍 Start typing to search foods...</div>';
+        return;
+      }
+
+      searchResults = FoodDB.searchFilter(q, currentFilter);
 
       if (searchResults.length === 0) {
         resultsEl.innerHTML = `<div class="empty-state" style="padding:32px"><span class="empty-state-icon" style="font-size:2rem">🔍</span><div class="empty-state-title">No results</div></div>`;

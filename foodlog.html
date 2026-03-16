@@ -21,7 +21,15 @@
     .total-lbl { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-top:3px; }
     .search-panel { position:sticky; top:calc(var(--nav-height) + 16px); }
     .search-results-list { display:flex; flex-direction:column; gap:8px; max-height:60vh; overflow-y:auto; margin-top:16px; }
-    @media(max-width:900px) { .foodlog-grid{grid-template-columns:1fr} .search-panel{position:relative;top:auto} }
+    @media(max-width:900px) {
+      .foodlog-grid { grid-template-columns:1fr; }
+      .search-panel { position:relative; top:auto; }
+    }
+    @media(max-width:768px) {
+      .foodlog-grid { display:flex; flex-direction:column; }
+      .search-panel { order:-1; }  /* Add Food panel comes FIRST on mobile */
+      .log-panel { order:1; }      /* Today's log comes SECOND */
+    }
     @media(max-width:600px) { .totals-strip{grid-template-columns:repeat(2,1fr)} }
   </style>
   <style>
@@ -108,7 +116,7 @@
 
       <div class="foodlog-grid">
         <!-- Left: Log -->
-        <div>
+        <div class="log-panel">
           <div class="card">
             <h3 style="margin-bottom:16px">Today's Entries</h3>
             <div id="food-log-entries" style="display:flex;flex-direction:column;gap:8px"></div>

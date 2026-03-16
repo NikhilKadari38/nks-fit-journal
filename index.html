@@ -11,7 +11,7 @@
     .hero { min-height: 100vh; display:flex; align-items:center; justify-content:center; text-align:center; padding: 24px; position:relative; }
     .hero-content { max-width: 720px; animation: heroIn 1s cubic-bezier(0.4,0,0.2,1) both; }
     @keyframes heroIn { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
-    .hero-badge { display:inline-flex; align-items:center; gap:8px; padding:8px 20px; background:rgba(229,9,20,0.1); border:1px solid rgba(229,9,20,0.25); border-radius:999px; font-size:0.82rem; font-weight:600; color:var(--accent-primary); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:28px; animation: heroIn 0.8s 0.1s both; }
+    .hero-badge { display:inline-flex; align-items:center; gap:8px; padding:8px 20px; background:rgba(229,9,20,0.1); border:1px solid rgba(229,9,20,0.25); border-radius:999px; font-size:0.82rem; font-weight:600; color:var(--accent-primary); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:28px; animation: heroIn 0.8s 0.1s both; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     [data-theme="dark"] .hero-badge { background:rgba(0,122,204,0.12); border-color:rgba(0,122,204,0.3); color:var(--accent-primary); }
     .hero-title { font-family:var(--heading-font); font-size:clamp(2.8rem,8vw,5.5rem); font-weight:900; line-height:1.05; margin-bottom:20px; animation: heroIn 0.8s 0.2s both; }
     .hero-title .brand { display:block; background:linear-gradient(135deg,var(--accent-primary),var(--accent-orange),var(--accent-amber)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
@@ -100,12 +100,6 @@
         <a href="dashboard.html" class="btn-enter">Enter Journal →</a>
         <a href="profile.html" class="btn btn-secondary btn-lg">Set Up Profile</a>
       </div>
-      <div class="features-row">
-        <div class="feature-chip">📊 Macro Tracking</div>
-        <div class="feature-chip">💧 Water Intake</div>
-        <div class="feature-chip">📈 Progress Charts</div>
-        <div class="feature-chip">🗄️ 75+ Foods</div>
-        <div class="feature-chip">🌙 Dark Mode</div>
       </div>
     </div>
     <div class="hero-scroll">↓</div>

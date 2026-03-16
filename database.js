@@ -42,27 +42,21 @@ const FoodDatabase = (() => {
   };
 
   // ── Render food cards ──
-  const foodCardHTML = (food) => {
-    let html = '<div class="food-db-card card card-sm" data-food-id="' + food.id + '" style="cursor:pointer;transition:all 0.2s">';
-    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
-    html += '<div style="display:flex;align-items:center;gap:8px">';
-    html += '<span class="' + (food.type === 'nonveg' ? 'nonveg-dot' : 'veg-dot') + '"></span>';
-    html += '<span style="font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase">' + (food.type === 'nonveg' ? 'Non-Veg' : 'Veg') + '</span>';
-    html += '</div>';
-    if (food.isCustom) html += '<span class="pill" style="font-size:0.65rem;padding:2px 8px;background:rgba(0,122,204,0.1);color:var(--accent-primary)">Custom</span>';
-    html += '</div>';
-    html += '<div style="font-weight:600;font-size:0.92rem;margin-bottom:8px;color:var(--text-primary)">' + food.name + '</div>';
-    html += '<div style="font-family:var(--heading-font);font-size:1.5rem;font-weight:700;color:var(--accent-primary);line-height:1;margin-bottom:4px">' + food.per100.calories + '</div>';
-    html += '<div style="font-size:0.72rem;color:var(--text-muted)">kcal / 100' + food.unit + '</div>';
-    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-color)">';
-    html += '<div style="text-align:center"><div style="font-weight:700;font-size:0.85rem;color:#3B82F6">' + food.per100.protein + 'g</div><div style="font-size:0.62rem;color:var(--text-muted)">Protein</div></div>';
-    html += '<div style="text-align:center;border-left:1px solid var(--border-color);border-right:1px solid var(--border-color)"><div style="font-weight:700;font-size:0.85rem;color:#A78BFA">' + food.per100.carbs + 'g</div><div style="font-size:0.62rem;color:var(--text-muted)">Carbs</div></div>';
-    html += '<div style="text-align:center"><div style="font-weight:700;font-size:0.85rem;color:#FB923C">' + food.per100.fat + 'g</div><div style="font-size:0.62rem;color:var(--text-muted)">Fat</div></div>';
-    html += '</div>';
-    if (food.isCustom) html += '<button class="btn btn-danger btn-sm w-full delete-custom" data-id="' + food.id + '" style="margin-top:10px">🗑️ Delete</button>';
-    html += '</div>';
-    return html;
+  const foodRowHTML = (food) => {
+    return '<div class="food-db-row" data-food-id="' + food.id + '">'
+      + '<div class="food-row-dot"><span class="' + (food.type === 'nonveg' ? 'nonveg-dot' : 'veg-dot') + '"></span></div>'
+      + '<div class="food-row-name">' + food.name + (food.isCustom ? ' <span class="food-row-badge">Custom</span>' : '') + '</div>'
+      + '<div class="food-row-cal">' + food.per100.calories + '<span> kcal</span></div>'
+      + '<div class="food-row-macro" style="color:#3B82F6">' + food.per100.protein + 'g<span>P</span></div>'
+      + '<div class="food-row-macro" style="color:#A78BFA">' + food.per100.carbs + 'g<span>C</span></div>'
+      + '<div class="food-row-macro" style="color:#FB923C">' + food.per100.fat + 'g<span>F</span></div>'
+      + '<div class="food-row-unit">per 100' + food.unit + '</div>'
+      + (food.isCustom
+          ? '<button class="food-row-delete delete-custom" data-id="' + food.id + '" title="Delete">🗑️</button>'
+          : '<div class="food-row-log-btn">+ Log</div>')
+      + '</div>';
   };
+  const foodCardHTML = foodRowHTML;
 
   const renderFoods = () => {
     const foods = FoodDB.searchFilter(searchQuery, currentFilter);
@@ -89,8 +83,13 @@ const FoodDatabase = (() => {
       html += '<div class="db-category-section" style="grid-column:1/-1;margin-bottom:8px">';
       html += '<div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;gap:8px">';
       html += '<span>' + cat + '</span><span style="background:var(--border-color);padding:2px 8px;border-radius:999px;font-size:0.7rem">' + items.length + '</span></div>';
-      html += '<div class="grid-3" style="gap:12px">';
-      items.forEach(function(food) { html += foodCardHTML(food); });
+      html += '<div class="food-db-table">'
+        + '<div class="food-db-table-header">'
+        + '<div></div><div>Food Name</div><div>Calories</div>'
+        + '<div>Protein</div><div>Carbs</div><div>Fat</div>'
+        + '<div>Per</div><div>Action</div>'
+        + '</div>';
+      items.forEach(function(food) { html += foodRowHTML(food); });
       html += '</div></div>';
     });
     container.innerHTML = html;
@@ -112,7 +111,7 @@ const FoodDatabase = (() => {
     let html = '<div class="db-category-section" style="grid-column:1/-1;margin-bottom:8px">';
     html += '<div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);margin-bottom:12px;display:flex;align-items:center;gap:8px">';
     html += '<span>My Custom Foods</span><span style="background:var(--border-color);padding:2px 8px;border-radius:999px;font-size:0.7rem">' + foods.length + '</span></div>';
-    html += '<div class="grid-3" style="gap:12px">';
+    html += '<div class="food-db-table">';
     foods.forEach(function(food) { html += foodCardHTML(food); });
     html += '</div></div>';
     container.innerHTML = html;
@@ -120,7 +119,7 @@ const FoodDatabase = (() => {
   };
 
   const bindCardEvents = (container) => {
-    container.querySelectorAll('.food-db-card').forEach(function(card) {
+    container.querySelectorAll('.food-db-row').forEach(function(card) {
       card.addEventListener('click', function(e) {
         if (e.target.closest('.delete-custom')) return;
         const food = FoodDB.getById(card.dataset.foodId);

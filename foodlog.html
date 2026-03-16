@@ -14,22 +14,11 @@
     @keyframes spin { to { transform:rotate(360deg); } }
     .page-content { opacity:0;transition:opacity 0.35s ease; }
     .page-content.ready { opacity:1; }
-    .foodlog-grid { display:grid; grid-template-columns:1fr 360px; gap:24px; align-items:start; }
     .totals-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
     .total-chip { background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px 16px; text-align:center; backdrop-filter:blur(8px); }
     .total-val { font-family:var(--heading-font); font-size:1.4rem; font-weight:700; }
     .total-lbl { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-top:3px; }
-    .search-panel { position:sticky; top:calc(var(--nav-height) + 16px); }
-    .search-results-list { display:flex; flex-direction:column; gap:8px; max-height:60vh; overflow-y:auto; margin-top:16px; }
-    @media(max-width:900px) {
-      .foodlog-grid { grid-template-columns:1fr; }
-      .search-panel { position:relative; top:auto; }
-    }
-    @media(max-width:768px) {
-      .foodlog-grid { display:flex; flex-direction:column; }
-      .search-panel { order:-1; }  /* Add Food panel comes FIRST on mobile */
-      .log-panel { order:1; }      /* Today's log comes SECOND */
-    }
+    .search-results-list { display:flex; flex-direction:column; gap:8px; }
     @media(max-width:600px) { .totals-strip{grid-template-columns:repeat(2,1fr)} }
   </style>
   <style>
@@ -114,31 +103,27 @@
         <div class="total-chip"><div class="total-val macro-fat" id="log-total-fat">0g</div><div class="total-lbl">Fat</div></div>
       </div>
 
-      <div class="foodlog-grid">
-        <!-- Left: Log -->
-        <div class="log-panel">
-          <div class="card">
-            <h3 style="margin-bottom:16px">Today's Entries</h3>
-            <div id="food-log-entries" style="display:flex;flex-direction:column;gap:8px"></div>
+      <!-- Add Food — full width -->
+      <div class="card mb-24">
+        <h3 style="margin-bottom:14px">➕ Add Food</h3>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <div class="search-wrap" style="flex:1;min-width:200px">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="food-search" class="search-input" placeholder="Search foods..."/>
+          </div>
+          <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all">All</button>
+            <button class="filter-tab" data-filter="veg">🌱 Veg</button>
+            <button class="filter-tab" data-filter="nonveg">🍗 Non-Veg</button>
           </div>
         </div>
+        <div class="search-results-list" id="search-results" style="max-height:320px;overflow-y:auto;margin-top:12px"></div>
+      </div>
 
-        <!-- Right: Search & Add -->
-        <div class="search-panel">
-          <div class="card">
-            <h3 style="margin-bottom:14px">➕ Add Food</h3>
-            <div class="search-wrap mb-16">
-              <span class="search-icon">🔍</span>
-              <input type="text" id="food-search" class="search-input" placeholder="Search foods..."/>
-            </div>
-            <div class="filter-tabs mb-16">
-              <button class="filter-tab active" data-filter="all">All</button>
-              <button class="filter-tab" data-filter="veg">🌱 Veg</button>
-              <button class="filter-tab" data-filter="nonveg">🍗 Non-Veg</button>
-            </div>
-            <div class="search-results-list" id="search-results"></div>
-          </div>
-        </div>
+      <!-- Today's Entries — full width -->
+      <div class="card">
+        <h3 style="margin-bottom:16px">Today's Entries</h3>
+        <div id="food-log-entries" style="display:flex;flex-direction:column;gap:8px"></div>
       </div>
     </div>
   </main>

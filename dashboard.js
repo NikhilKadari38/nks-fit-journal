@@ -154,10 +154,6 @@ const Dashboard = (() => {
     // Calorie ring
     MacroUI.drawRing('macro-canvas', eaten, goal, totals.protein, totals.carbs, totals.fat);
 
-    // Daily calorie goal stat card
-    const calGoalStat = document.getElementById('cal-goal-stat');
-    if (calGoalStat) calGoalStat.innerHTML = goal.toLocaleString() + '<span class="stat-unit">kcal</span>';
-
     // Macro bars — always calculate fresh from calorie goal + goal type
     const goalType = (p.weight && p.goalWeight)
       ? (p.weight < p.goalWeight ? 'gain' : p.weight > p.goalWeight ? 'lose' : 'maintain')

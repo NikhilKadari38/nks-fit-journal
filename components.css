@@ -600,3 +600,74 @@
   .nav-mobile { display: block; }
   .nav-brand-name { font-size: 1rem; }
 }
+
+/* ── BOTTOM NAV (mobile only) ── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 900;
+  background: var(--bg-modal);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-color);
+  padding: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-nav-inner {
+  display: flex;
+  align-items: stretch;
+  height: 60px;
+}
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: all 0.15s;
+  padding: 6px 2px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  position: relative;
+}
+.bottom-nav-item.active {
+  color: var(--accent-primary);
+}
+.bottom-nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 2px;
+  background: var(--accent-primary);
+  border-radius: 0 0 4px 4px;
+}
+.bottom-nav-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.bottom-nav-label {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+/* Add padding to main content so it's not hidden behind bottom nav */
+@media(max-width: 768px) {
+  .bottom-nav { display: flex; flex-direction: column; }
+  main { padding-bottom: 72px !important; }
+  /* Hide hamburger on mobile since we have bottom nav */
+  .nav-hamburger { display: none !important; }
+  .nav-mobile { display: none !important; }
+  /* Slim down top navbar on mobile */
+  .navbar-inner { padding: 0 14px; }
+  .nav-actions { gap: 6px; }
+  .btn-logout span { display: none; }
+}

@@ -345,7 +345,13 @@ const FoodDatabase = (() => {
 
 document.addEventListener('DOMContentLoaded', async function() {
   BGAnim.init('database');
-  await syncFromCloud();
+  // Show loading state in grid while fetching
+  const grid = document.getElementById('foods-grid');
+  if (grid) grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)"><div style="font-size:2rem;margin-bottom:12px">⏳</div><div>Loading food database...</div></div>';
+
+  await syncFromCloud(); // this calls FoodDB.load() + syncOverridesFromCloud()
+
+  // Init after foods are loaded
   FoodDatabase.init();
   SideFigures.init();
 

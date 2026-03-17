@@ -21,8 +21,10 @@ const FoodDB = (() => {
         // Try cache first
         const ts = parseInt(localStorage.getItem(CACHE_TS) || '0');
         const cached = localStorage.getItem(CACHE_KEY);
-        if (cached && (Date.now() - ts) < CACHE_TTL) {
-          _globalFoods = JSON.parse(cached);
+        const cachedFoods = cached ? JSON.parse(cached) : [];
+        // Use cache only if it has foods and is fresh
+        if (cachedFoods.length > 0 && (Date.now() - ts) < CACHE_TTL) {
+          _globalFoods = cachedFoods;
           _loaded = true;
           resolve(_globalFoods);
           // Refresh in background
@@ -48,7 +50,6 @@ const FoodDB = (() => {
     try {
       const snap = await firebase.firestore()
         .collection('globalFoods')
-        .orderBy('category')
         .get();
       _globalFoods = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       _loaded = true;

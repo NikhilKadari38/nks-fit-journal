@@ -213,40 +213,32 @@ const BUILTIN_FOODS = [
 window.FOOD_DATABASE = BUILTIN_FOODS;
 
 const FoodDB = (() => {
-  const CACHE_KEY   = 'nkj_globalFoods_cache';
-  const CACHE_TS    = 'nkj_globalFoods_ts';
-  const CACHE_TTL   = 24 * 60 * 60 * 1000; // 24 hours
-
-  let _globalFoods = [];  // loaded from Firebase
+  // Always start with built-in foods so app works instantly
+  let _globalFoods = [...BUILTIN_FOODS];
   let _loaded = false;
   let _loadPromise = null;
 
-  // ── Load global foods (Firebase + cache) ──
+  // ── Load global foods from Firebase ──
   const load = () => {
     if (_loadPromise) return _loadPromise;
     _loadPromise = new Promise(async (resolve) => {
       try {
-        // Try cache first
-        const ts = parseInt(localStorage.getItem(CACHE_TS) || '0');
-        const cached = localStorage.getItem(CACHE_KEY);
-        const cachedFoods = cached ? JSON.parse(cached) : [];
-        // Use cache only if it has foods and is fresh
-        if (cachedFoods.length > 0 && (Date.now() - ts) < CACHE_TTL) {
-          _globalFoods = cachedFoods;
-          _loaded = true;
-          resolve(_globalFoods);
-          // Refresh in background
-          _refreshFromFirebase();
-          return;
+        const snap = await firebase.firestore()
+          .collection('globalFoods')
+          .get();
+        if (snap.docs.length > 0) {
+          _globalFoods = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         }
-        // No cache — load from Firebase
-        await _refreshFromFirebase();
+        // If Firebase empty — fall back to built-ins (before migration)
+        if (_globalFoods.length === 0) {
+          _globalFoods = [...BUILTIN_FOODS];
+        }
+        _loaded = true;
         resolve(_globalFoods);
       } catch (e) {
-        console.warn('FoodDB load error:', e);
-        // Try cache as fallback
-        const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) _globalFoods = JSON.parse(cached);
+        console.warn('FoodDB Firebase load error:', e);
+        // On error use built-ins
+        _globalFoods = [...BUILTIN_FOODS];
         _loaded = true;
         resolve(_globalFoods);
       }
@@ -254,25 +246,10 @@ const FoodDB = (() => {
     return _loadPromise;
   };
 
-  const _refreshFromFirebase = async () => {
-    try {
-      const snap = await firebase.firestore()
-        .collection('globalFoods')
-        .get();
-      _globalFoods = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      _loaded = true;
-      localStorage.setItem(CACHE_KEY, JSON.stringify(_globalFoods));
-      localStorage.setItem(CACHE_TS, Date.now().toString());
-    } catch (e) {
-      console.warn('Firebase food refresh error:', e);
-    }
-  };
-
-  // ── Force refresh cache ──
+  // ── Force re-fetch ──
   const refresh = async () => {
     _loadPromise = null;
-    localStorage.removeItem(CACHE_KEY);
-    localStorage.removeItem(CACHE_TS);
+    _globalFoods = [...BUILTIN_FOODS];
     await load();
   };
 

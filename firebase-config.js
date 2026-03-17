@@ -175,6 +175,15 @@ const NKStorage = {
     cloud.set('meta', 'customFoods', { items: foods, updatedAt: new Date().toISOString() });
     return newFood;
   },
+  saveCustomFoods: (foods) => {
+    const username = Auth.getCurrentUser();
+    if (!username) return;
+    local.set('customFoods', foods);
+    // Sync each to Firebase
+    foods.forEach(food => {
+      cloud.set('foodlogs', 'custom_' + food.id, food).catch(() => {});
+    });
+  },
   deleteCustomFood: (id) => {
     const foods = NKStorage.getCustomFoods().filter(f => f.id !== id);
     local.set('custom_foods', foods);
@@ -212,4 +221,14 @@ const NKStorage = {
 };
 
 window.NKStorage = NKStorage;
-window.syncFromCloud = syncFromCloud;
+
+// Enhanced syncFromCloud — also syncs food overrides
+const _origSync = syncFromCloud;
+window.syncFromCloud = async () => {
+  await _origSync();
+  // Load global foods from Firebase (with cache)
+  if (window.FoodDB) {
+    await FoodDB.load();
+    await FoodDB.syncOverridesFromCloud();
+  }
+};

@@ -228,6 +228,26 @@
       <!-- Admin Panel — only visible to nikhil -->
       <div id="admin-panel" style="display:none;margin-top:24px">
         <div class="card" style="border:2px solid var(--accent-primary)">
+          <!-- CSV Upload/Download section -->
+          <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border-color)">
+            <h4 style="margin-bottom:6px">📊 Global Food Database</h4>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px">Download as CSV, edit in Excel, upload to update for all users.</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-secondary" id="download-csv-btn">⬇️ Download CSV</button>
+              <label class="btn btn-secondary" style="cursor:pointer">
+                ⬆️ Upload CSV
+                <input type="file" id="upload-csv-input" accept=".csv" style="display:none"/>
+              </label>
+            </div>
+            <div id="csv-status" style="margin-top:10px;font-size:0.82rem;display:none"></div>
+          </div>
+          <!-- Migrate button (one-time) -->
+          <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border-color)">
+            <h4 style="margin-bottom:6px">🚀 Migrate Built-in Foods to Firebase</h4>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px">One-time action — pushes all default foods to Firebase global database.</p>
+            <button class="btn btn-primary" id="migrate-foods-btn">🚀 Migrate Now</button>
+            <div id="migrate-status" style="margin-top:10px;font-size:0.82rem;display:none"></div>
+          </div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
             <div>
               <h3 style="color:var(--accent-primary)">🛡️ Admin Panel</h3>
@@ -269,7 +289,7 @@
   <script src="auth.js"></script>
 <script src="app.js"></script>
 <script src="animations.js"></script>
-<script src="fooddata.js"></script>
+<script src="fooddb.js"></script>
 <script src="profile.js"></script>
 <script>
   // Wire bottom save button to same handler

@@ -414,6 +414,72 @@ const AdminPanel = (() => {
     loadUsers();
     const refreshBtn = document.getElementById('refresh-users-btn');
     if (refreshBtn) refreshBtn.addEventListener('click', loadUsers);
+    bindCSVAdmin();
+  };
+
+  const bindCSVAdmin = () => {
+    // Download CSV
+    const downloadBtn = document.getElementById('download-csv-btn');
+    if (downloadBtn) downloadBtn.addEventListener('click', () => {
+      const csv = FoodDB.adminExportCSV();
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'nk-food-database.csv';
+      a.click(); URL.revokeObjectURL(url);
+      Toast.success('✅ CSV downloaded!');
+    });
+
+    // Upload CSV
+    const uploadInput = document.getElementById('upload-csv-input');
+    if (uploadInput) uploadInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const statusEl = document.getElementById('csv-status');
+      statusEl.style.display = 'block';
+      statusEl.style.color = 'var(--text-muted)';
+      statusEl.textContent = '⏳ Uploading and processing...';
+      try {
+        const text = await file.text();
+        const count = await FoodDB.adminImportCSV(text);
+        statusEl.style.color = 'var(--success)';
+        statusEl.textContent = '✅ Uploaded ' + count + ' foods successfully! All users will see updated values.';
+        Toast.success('✅ Database updated with ' + count + ' foods!');
+      } catch (err) {
+        statusEl.style.color = 'var(--error)';
+        statusEl.textContent = '❌ Error: ' + err.message;
+      }
+      uploadInput.value = '';
+    });
+
+    // Migrate built-in foods
+    const migrateBtn = document.getElementById('migrate-foods-btn');
+    if (migrateBtn) migrateBtn.addEventListener('click', async () => {
+      if (!confirm('This will push all default foods to Firebase. Continue?')) return;
+      const statusEl = document.getElementById('migrate-status');
+      statusEl.style.display = 'block';
+      statusEl.style.color = 'var(--text-muted)';
+      statusEl.textContent = '⏳ Migrating foods to Firebase...';
+      migrateBtn.disabled = true;
+      try {
+        // Built-in foods from the old FOOD_DATABASE if still available
+        const foods = window.FOOD_DATABASE || [];
+        if (!foods.length) {
+          statusEl.style.color = 'var(--error)';
+          statusEl.textContent = '❌ No built-in foods found. Upload a CSV instead.';
+          migrateBtn.disabled = false;
+          return;
+        }
+        const count = await FoodDB.adminMigrateAll(foods);
+        statusEl.style.color = 'var(--success)';
+        statusEl.textContent = '✅ Migrated ' + count + ' foods to Firebase!';
+        Toast.success('✅ Migration complete! ' + count + ' foods in Firebase.');
+      } catch (err) {
+        statusEl.style.color = 'var(--error)';
+        statusEl.textContent = '❌ Error: ' + err.message;
+        migrateBtn.disabled = false;
+      }
+    });
   };
 
   return { init, loadUsers, confirmDelete };

@@ -23,7 +23,7 @@ nks-fit-journal/
 ├── auth.js                 ← Custom username/password auth system
 ├── app.js                  ← Theme, nav, toast, modal, utilities, side figures
 ├── animations.js           ← 6 unique canvas background animations per page
-├── fooddata.js             ← 91+ food database + FoodDB utility functions
+├── fooddb.js               ← 91+ food database + FoodDB utility functions (Firebase-backed)
 ├── dashboard.js            ← Dashboard logic
 ├── foodlog.js              ← Food log + date navigation logic
 ├── database.js             ← Database page logic

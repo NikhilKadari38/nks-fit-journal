@@ -95,6 +95,8 @@ const BUILTIN_FOODS = [
     per100:{ calories:93, protein:3.3, carbs:17.3, fat:1.0 }, defaultQty:150 },
   { id:'curry-rice', name:'Curry with Rice', category:'Mixed Meals', type:'veg', unit:'g',
     per100:{ calories:117, protein:2.6, carbs:20.0, fat:2.6 }, defaultQty:350 },
+  { id:'pizza', name:'Italpizza La Numero (Veg)', category:'Mixed Meals', type:'veg', unit:'g',
+    per100:{ calories:212, protein:10.0, carbs:26.0, fat:7.2 }, defaultQty:100 },
 
   // ── DALS ──
   { id:'red-gram-dal', name:'Red Gram Dal (cooked)', category:'Dals & Legumes', type:'veg', unit:'g',
@@ -183,6 +185,10 @@ const BUILTIN_FOODS = [
     per100:{ calories:68, protein:2.6, carbs:14.3, fat:1.0 }, defaultQty:100 },
   { id:'kiwi', name:'Kiwi', category:'Fruits', type:'veg', unit:'g',
     per100:{ calories:61, protein:1.1, carbs:14.7, fat:0.5 }, defaultQty:75 },
+
+  // ── CONDIMENTS ──
+  { id:'mayonnaise', name:'Mayonnaise', category:'Condiments', type:'veg', unit:'ml',
+    per100:{ calories:691, protein:1.1, carbs:2.4, fat:75.1 }, defaultQty:100 },
 
   // ── SUPPLEMENTS ──
   { id:'whey-protein', name:'Whey Protein (1 scoop)', category:'Supplements', type:'veg', unit:'g',

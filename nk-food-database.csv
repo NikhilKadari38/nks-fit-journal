@@ -3,7 +3,7 @@ chia-seeds,"Soaked Chia Seeds","Seeds & Nuts",veg,g,483,16.7,41.7,30.8,12
 almonds,"Soaked Almonds","Seeds & Nuts",veg,g,579,21.2,21.6,49.9,14
 flaxseeds,"Flaxseeds (ground)","Seeds & Nuts",veg,g,534,18.3,28.9,42.2,10
 pumpkin-seeds,"Pumpkin Seeds","Seeds & Nuts",veg,g,559,30.2,10.7,49.1,10
-sunflower-seeds,"Sunflower Seeds","Seeds & Nuts",veg,g,584,20.8,20.0,51.5,10
+sunflower-seeds,"Sunflower Seeds","Seeds & Nuts",veg,g,584,20.8,20,51.5,10
 walnuts,"Walnuts","Seeds & Nuts",veg,g,654,15.2,13.7,65.2,14
 cashews,"Cashews","Seeds & Nuts",veg,g,553,18.2,30.2,43.8,14
 peanuts,"Peanuts (roasted)","Seeds & Nuts",veg,g,585,23.7,21.5,49.7,30
@@ -11,64 +11,66 @@ peanut-butter,"Peanut Butter","Seeds & Nuts",veg,g,588,25.1,19.6,50.4,16
 orange-juice,"Orange Juice (fresh)","Juices & Drinks",veg,ml,45,0.7,10.4,0.2,200
 abc-juice,"ABC Juice with Lemon","Juices & Drinks",veg,ml,38,0.6,8.5,0.2,200
 cold-coffee,"Cold Coffee (Bru 3 sachets)","Juices & Drinks",veg,ml,58,1.3,10.2,1.5,200
-coke,"Coca-Cola (Regular)","Juices & Drinks",veg,ml,42,0.0,10.6,0.0,330
-coke-zero,"Coca-Cola Zero Sugar","Juices & Drinks",veg,ml,0,0.0,0.0,0.0,330
-sprite,"Sprite","Juices & Drinks",veg,ml,39,0.0,9.9,0.0,330
-lemon-water,"Lemon Water","Juices & Drinks",veg,ml,4,0.1,1.0,0.0,250
+coke,"Coca-Cola (Regular)","Juices & Drinks",veg,ml,42,0,10.6,0,330
+coke-zero,"Coca-Cola Zero Sugar","Juices & Drinks",veg,ml,0,0,0,0,330
+sprite,"Sprite","Juices & Drinks",veg,ml,39,0,9.9,0,330
+lemon-water,"Lemon Water","Juices & Drinks",veg,ml,4,0.1,1,0,250
 coconut-water,"Coconut Water","Juices & Drinks",veg,ml,19,0.7,3.7,0.2,250
 skimmed-milk,"Skimmed Milk","Dairy",veg,ml,35,3.4,4.9,0.1,200
 full-fat-milk,"Full Fat Milk","Dairy",veg,ml,61,3.2,4.8,3.3,200
 paneer,"Paneer","Dairy",veg,g,265,18.3,3.6,20.4,150
-curd-0fat,"Curd (0% Fat)","Dairy",veg,g,35,5.0,4.0,0.0,100
+curd-0fat,"Curd (0% Fat)","Dairy",veg,g,35,5,4,0,100
 curd-fullfat,"Curd (Full Fat ~5% protein)","Dairy",veg,g,70,3.5,5.5,3.5,200
-greek-yogurt,"Greek Yogurt / Hung Curd","Dairy",veg,g,97,10.0,3.6,5.0,100
+greek-yogurt,"Greek Yogurt / Hung Curd","Dairy",veg,g,97,10,3.6,5,100
 cottage-cheese,"Cottage Cheese (low fat)","Dairy",veg,g,72,12.5,3.1,1.5,100
 cheese-slice,"Cheese Slice","Dairy",veg,g,315,19.8,3.7,24.9,25
 whole-egg,"Whole Egg","Eggs",veg,g,155,12.6,1.1,10.6,50
 egg-white,"Egg White","Eggs",veg,g,52,10.9,0.7,0.2,33
+mayonnaise,"Mayonnaise","Condiments",veg,ml,691,1.1,2.4,75.1,100
+pizza,"Italpizza La Numero (Veg)","Mixed Meals",veg,g,212,10,26,7.2,100
 bread-white,"Bread Slices (White)","Grains & Bakery",veg,g,265,8.9,49.4,3.2,60
-bread-multigrain,"Multigrain Bread","Grains & Bakery",veg,g,250,10.0,44.7,4.2,60
-roti,"Roti (Wheat)","Grains & Bakery",veg,g,300,8.8,55.0,6.3,40
+bread-multigrain,"Multigrain Bread","Grains & Bakery",veg,g,250,10,44.7,4.2,60
+roti,"Roti (Wheat)","Grains & Bakery",veg,g,300,8.8,55,6.3,40
 white-rice,"Cooked White Rice","Grains & Bakery",veg,g,130,2.7,28.2,0.3,180
-sona-masoori-rice,"Sona Masoori Rice (cooked)","Grains & Bakery",veg,g,130,2.5,28.0,0.3,180
+sona-masoori-rice,"Sona Masoori Rice (cooked)","Grains & Bakery",veg,g,130,2.5,28,0.3,180
 basmati-rice,"Basmati Rice (cooked)","Grains & Bakery",veg,g,121,3.5,25.2,0.4,180
-brown-rice,"Brown Rice (cooked)","Grains & Bakery",veg,g,111,2.6,23.0,0.9,180
+brown-rice,"Brown Rice (cooked)","Grains & Bakery",veg,g,111,2.6,23,0.9,180
 quinoa,"Quinoa (cooked)","Grains & Bakery",veg,g,120,4.4,21.3,1.9,180
 oats,"Oats (rolled, dry)","Grains & Bakery",veg,g,371,13.2,55.7,7.2,40
-poha,"Poha (cooked)","Grains & Bakery",veg,g,120,2.0,25.3,1.3,150
-upma,"Upma (rava)","Grains & Bakery",veg,g,127,3.0,20.0,4.0,150
-dalia,"Wheat Dalia (cooked)","Grains & Bakery",veg,g,93,3.3,17.3,1.0,150
-curry-rice,"Curry with Rice","Mixed Meals",veg,g,117,2.6,20.0,2.6,350
+poha,"Poha (cooked)","Grains & Bakery",veg,g,120,2,25.3,1.3,150
+upma,"Upma (rava)","Grains & Bakery",veg,g,127,3,20,4,150
+dalia,"Wheat Dalia (cooked)","Grains & Bakery",veg,g,93,3.3,17.3,1,150
+curry-rice,"Curry with Rice","Mixed Meals",veg,g,117,2.6,20,2.6,350
 red-gram-dal,"Red Gram Dal (cooked)","Dals & Legumes",veg,g,116,7.2,19.9,0.4,100
 toor-dal,"Toor Dal (cooked)","Dals & Legumes",veg,g,116,6.8,20.2,0.4,100
-moong-dal,"Moong Dal (cooked)","Dals & Legumes",veg,g,91,7.0,13.7,0.4,100
+moong-dal,"Moong Dal (cooked)","Dals & Legumes",veg,g,91,7,13.7,0.4,100
 chana-dal,"Senaga Pappu / Chana Dal (cooked)","Dals & Legumes",veg,g,164,8.7,27.3,2.7,100
-masoor-dal,"Masoor Dal (cooked)","Dals & Legumes",veg,g,116,9.0,20.1,0.4,100
+masoor-dal,"Masoor Dal (cooked)","Dals & Legumes",veg,g,116,9,20.1,0.4,100
 rajma,"Rajma / Kidney Beans (cooked)","Dals & Legumes",veg,g,127,8.7,22.8,0.5,100
 chickpeas,"Chickpeas / Chole (cooked)","Dals & Legumes",veg,g,164,8.9,27.4,2.6,100
-black-chana,"Black Chana (cooked)","Dals & Legumes",veg,g,164,9.0,27.4,2.6,100
-sprouts,"Moong Sprouts (raw)","Dals & Legumes",veg,g,30,3.0,5.9,0.2,100
+black-chana,"Black Chana (cooked)","Dals & Legumes",veg,g,164,9,27.4,2.6,100
+sprouts,"Moong Sprouts (raw)","Dals & Legumes",veg,g,30,3,5.9,0.2,100
 edamame,"Edamame","Dals & Legumes",veg,g,121,11.9,8.9,5.2,100
-tofu-firm,"Tofu (firm)","Dals & Legumes",veg,g,76,8.0,1.9,4.8,100
-soya-chunks,"Soya Chunks (dry)","Dals & Legumes",veg,g,345,52.4,33.0,0.5,30
+tofu-firm,"Tofu (firm)","Dals & Legumes",veg,g,76,8,1.9,4.8,100
+soya-chunks,"Soya Chunks (dry)","Dals & Legumes",veg,g,345,52.4,33,0.5,30
 broccoli,"Broccoli (cooked)","Vegetables",veg,g,35,2.8,6.6,0.4,100
 spinach,"Spinach / Palak (cooked)","Vegetables",veg,g,23,2.9,3.6,0.4,100
-sweet-potato,"Sweet Potato (boiled)","Vegetables",veg,g,90,2.0,20.7,0.1,100
+sweet-potato,"Sweet Potato (boiled)","Vegetables",veg,g,90,2,20.7,0.1,100
 carrot,"Carrot (raw)","Vegetables",veg,g,41,0.9,9.6,0.2,100
 cucumber,"Cucumber","Vegetables",veg,g,16,0.7,3.6,0.1,100
 tomato,"Tomato","Vegetables",veg,g,18,0.9,3.9,0.2,100
 onion,"Onion","Vegetables",veg,g,40,1.1,9.3,0.1,100
-capsicum,"Capsicum / Bell Pepper","Vegetables",veg,g,31,1.0,6.0,0.3,100
+capsicum,"Capsicum / Bell Pepper","Vegetables",veg,g,31,1,6,0.3,100
 mushroom,"Mushroom","Vegetables",veg,g,22,3.1,3.3,0.3,100
-beans-sauted,"Beans Sautéed","Vegetables",veg,g,50,2.8,9.0,0.3,100
+beans-sauted,"Beans Sautéed","Vegetables",veg,g,50,2.8,9,0.3,100
 potato-boiled,"Potato (boiled)","Vegetables",veg,g,87,1.9,20.1,0.1,150
-potato-roasted,"Potato (roasted)","Vegetables",veg,g,149,3.0,33.0,0.2,150
-cauliflower,"Cauliflower (cooked)","Vegetables",veg,g,25,1.9,5.0,0.3,100
+potato-roasted,"Potato (roasted)","Vegetables",veg,g,149,3,33,0.2,150
+cauliflower,"Cauliflower (cooked)","Vegetables",veg,g,25,1.9,5,0.3,100
 cabbage,"Cabbage (cooked)","Vegetables",veg,g,23,1.3,5.2,0.1,100
 peas,"Green Peas (cooked)","Vegetables",veg,g,84,5.4,15.6,0.4,100
-corn,"Sweet Corn (boiled)","Vegetables",veg,g,96,3.4,21.0,1.5,100
-ladyfinger,"Ladyfinger / Okra (cooked)","Vegetables",veg,g,33,2.0,7.0,0.2,100
-bitter-gourd,"Bitter Gourd / Karela (cooked)","Vegetables",veg,g,25,1.0,5.3,0.2,100
+corn,"Sweet Corn (boiled)","Vegetables",veg,g,96,3.4,21,1.5,100
+ladyfinger,"Ladyfinger / Okra (cooked)","Vegetables",veg,g,33,2,7,0.2,100
+bitter-gourd,"Bitter Gourd / Karela (cooked)","Vegetables",veg,g,25,1,5.3,0.2,100
 bottle-gourd,"Bottle Gourd / Lauki (cooked)","Vegetables",veg,g,15,0.6,3.4,0.1,150
 drumstick,"Drumstick / Moringa (cooked)","Vegetables",veg,g,37,2.1,8.5,0.2,100
 banana,"Banana","Fruits",veg,g,89,1.1,22.8,0.3,120
@@ -77,16 +79,16 @@ watermelon,"Watermelon","Fruits",veg,g,30,0.6,7.6,0.2,150
 papaya,"Papaya","Fruits",veg,g,43,0.5,10.8,0.3,140
 pomegranate,"Pomegranate","Fruits",veg,g,83,1.7,18.7,1.2,100
 mango,"Mango","Fruits",veg,g,60,0.8,14.9,0.4,100
-guava,"Guava","Fruits",veg,g,68,2.6,14.3,1.0,100
+guava,"Guava","Fruits",veg,g,68,2.6,14.3,1,100
 kiwi,"Kiwi","Fruits",veg,g,61,1.1,14.7,0.5,75
-whey-protein,"Whey Protein (1 scoop)","Supplements",veg,g,400,78.0,8.0,5.0,30
+whey-protein,"Whey Protein (1 scoop)","Supplements",veg,g,400,78,8,5,30
 protein-bar,"Protein Bar (12-14g protein)","Supplements",veg,g,367,21.7,43.3,11.7,60
-chicken-breast,"Chicken Breast (boiled)","Non-Veg",nonveg,g,165,31.0,0.0,3.6,100
-chicken-thigh,"Chicken Thigh (cooked)","Non-Veg",nonveg,g,177,24.0,0.0,8.9,100
+chicken-breast,"Chicken Breast (boiled)","Non-Veg",nonveg,g,165,31,0,3.6,100
+chicken-thigh,"Chicken Thigh (cooked)","Non-Veg",nonveg,g,177,24,0,8.9,100
 boiled-egg,"Boiled Egg","Non-Veg",nonveg,g,155,12.6,1.1,10.6,50
-egg-omelette,"Egg Omelette (2 eggs)","Non-Veg",nonveg,g,154,11.0,0.9,11.4,110
-tuna,"Tuna (canned)","Non-Veg",nonveg,g,116,25.5,0.0,1.0,100
-salmon,"Salmon (cooked)","Non-Veg",nonveg,g,208,20.4,0.0,13.4,100
+egg-omelette,"Egg Omelette (2 eggs)","Non-Veg",nonveg,g,154,11,0.9,11.4,110
+tuna,"Tuna (canned)","Non-Veg",nonveg,g,116,25.5,0,1,100
+salmon,"Salmon (cooked)","Non-Veg",nonveg,g,208,20.4,0,13.4,100
 prawns,"Prawns (boiled)","Non-Veg",nonveg,g,99,20.9,0.9,1.1,100
-mutton,"Mutton (cooked)","Non-Veg",nonveg,g,234,25.6,0.0,14.3,100
-fish-curry,"Fish Curry","Non-Veg",nonveg,g,120,14.0,4.0,5.5,150
+mutton,"Mutton (cooked)","Non-Veg",nonveg,g,234,25.6,0,14.3,100
+fish-curry,"Fish Curry","Non-Veg",nonveg,g,120,14,4,5.5,150

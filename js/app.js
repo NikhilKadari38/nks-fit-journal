@@ -5,7 +5,11 @@
 
 // ── Utils ──
 const Utils = {
-  today: () => new Date().toISOString().split('T')[0],
+  today: () => {
+    // Always use browser's local date — works correctly for any timezone worldwide
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  },
   formatDate: (dateStr) => {
     const d = new Date(dateStr + 'T00:00:00');
     return d.toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
@@ -206,38 +210,140 @@ const WaterGlass = {
     const clamped = Utils.clamp(pct, 0, 1);
     const isDark = Theme.isDark();
     const waterColor = isDark ? '#007ACC' : '#38BDF8';
+    const waterDark  = isDark ? '#005A9E' : '#0284C7';
     const glassColor = isDark ? '#4EC9B0' : '#0284C7';
-    const bgColor = isDark ? '#252526' : '#F0F9FF';
-    const fillHeight = Math.round(clamped * 52);
-    const fillY = 16 + (52 - fillHeight);
+    const bgColor    = isDark ? '#252526' : '#E0F2FE';
+
+    // viewBox is 60x96
+    // Rim:   x=8,  y=6,  w=44, h=8  (bottom y=14)
+    // Glass: x=10, y=14, w=40, h=62 (bottom y=76)
+    // Text:  y=90
+    const GX=10, GY=14, GW=40, GH=62;
+    const fillHeight = Math.round(clamped * GH);
+    const fillY = GY + GH - fillHeight;
 
     svg.innerHTML = `
       <defs>
-        <clipPath id="glass-clip">
-          <rect x="8" y="14" width="36" height="54" rx="4"/>
+        <clipPath id="wg-clip-${svgId}">
+          <rect x="${GX}" y="${GY}" width="${GW}" height="${GH}" rx="4"/>
         </clipPath>
-        <linearGradient id="water-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="${waterColor}" stop-opacity="0.9"/>
-          <stop offset="100%" stop-color="${isDark?'#4EC9B0':'#0284C7'}" stop-opacity="1"/>
+        <linearGradient id="wg-grad-${svgId}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="${waterColor}" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="${waterDark}"  stop-opacity="1"/>
         </linearGradient>
       </defs>
-      <!-- Glass outline -->
-      <rect x="8" y="14" width="36" height="54" rx="4" fill="${bgColor}" stroke="${glassColor}" stroke-width="2"/>
-      <!-- Water fill -->
-      <rect x="9" y="${fillY}" width="34" height="${fillHeight}" rx="2" fill="url(#water-grad)" clip-path="url(#glass-clip)" opacity="0.9">
-        ${clamped > 0 ? '<animate attributeName="y" from="'+fillY+'" to="'+fillY+'" dur="0.8s" fill="freeze"/>' : ''}
-      </rect>
-      <!-- Wave on top of water -->
-      ${clamped > 0.05 ? `<path d="M9 ${fillY} Q17 ${fillY-3} 26 ${fillY} Q35 ${fillY+3} 43 ${fillY}" fill="none" stroke="${waterColor}" stroke-width="1.5" opacity="0.7" clip-path="url(#glass-clip)">
-        <animateTransform attributeName="transform" type="translate" from="-17 0" to="17 0" dur="2s" repeatCount="indefinite"/>
-      </path>` : ''}
-      <!-- Percentage text -->
-      <text x="26" y="76" text-anchor="middle" font-size="9" font-family="DM Sans" font-weight="600" fill="${glassColor}">${Math.round(clamped*100)}%</text>
-      <!-- Glass rim -->
-      <rect x="5" y="10" width="42" height="6" rx="3" fill="${glassColor}" opacity="0.5"/>
+
+      <!-- Rim -->
+      <rect x="7" y="6" width="46" height="9" rx="4"
+            fill="${glassColor}" opacity="0.8"/>
+
+      <!-- Glass body background -->
+      <rect x="${GX}" y="${GY}" width="${GW}" height="${GH}"
+            rx="4" fill="${bgColor}"/>
+
+      <!-- Water + wave, clipped inside glass -->
+      <g clip-path="url(#wg-clip-${svgId})">
+        ${fillHeight > 0 ? `
+          <rect x="${GX}" y="${fillY}" width="${GW}" height="${fillHeight + 2}"
+                fill="url(#wg-grad-${svgId})"/>
+        ` : ''}
+        ${clamped > 0.02 && clamped < 0.99 ? `
+          <path d="M${GX - GW} ${fillY}
+                   Q${GX}        ${fillY - 5}
+                     ${GX + GW}  ${fillY}
+                   Q${GX + GW*2} ${fillY + 5}
+                     ${GX + GW*3} ${fillY}
+                   L${GX + GW*3} ${GY + GH}
+                   L${GX - GW}   ${GY + GH} Z"
+                fill="${waterColor}" opacity="0.35">
+            <animateTransform attributeName="transform" type="translate"
+              from="0 0" to="${GW} 0" dur="2.5s" repeatCount="indefinite"/>
+          </path>
+        ` : ''}
+      </g>
+
+      <!-- Glass border drawn ON TOP to mask any edge bleed -->
+      <rect x="${GX}" y="${GY}" width="${GW}" height="${GH}"
+            rx="4" fill="none" stroke="${glassColor}" stroke-width="3"/>
+
+      <!-- Percentage -->
+      <text x="${GX + GW / 2}" y="90"
+            text-anchor="middle" font-size="11" font-family="DM Sans"
+            font-weight="700" fill="${glassColor}">
+        ${Math.round(clamped * 100)}%
+      </text>
     `;
   }
 };
+
+
+// ── Side Body Figures ──
+const SideFigures = {
+  init: () => {
+    // Don't show on home/login pages
+    const page = document.body.dataset.page || '';
+    if (!page || page === 'home' || page === 'login') return;
+
+    const profile = window.NKStorage ? (NKStorage.getProfile() || {}) : {};
+    const goalType = (profile.weight && profile.goalWeight)
+      ? (profile.weight < profile.goalWeight ? 'gain'
+       : profile.weight > profile.goalWeight ? 'lose' : 'maintain')
+      : 'lose';
+
+    // Check if goal is reached (within 0.5kg tolerance)
+    const goalReached = profile.weight && profile.goalWeight
+      && Math.abs(profile.weight - profile.goalWeight) <= 0.5;
+
+    let leftEmoji, rightEmoji, leftLabel, rightLabel;
+
+    if (goalReached) {
+      // 🎉 Goal reached — same emoji on both sides!
+      const goalEmoji = goalType === 'gain' ? '🏋️' : goalType === 'lose' ? '🏃' : '💪';
+      leftEmoji  = goalEmoji; leftLabel  = 'You';
+      rightEmoji = goalEmoji; rightLabel = 'Goal ✅';
+    } else if (goalType === 'gain') {
+      // Thin/weak (Now) → Bulk muscled (Goal)
+      leftEmoji  = '🧎';  leftLabel  = 'Now';
+      rightEmoji = '🏋️'; rightLabel = 'Goal';
+    } else if (goalType === 'lose') {
+      // Round/heavy (Now) → Lean running (Goal)
+      leftEmoji  = '🫃';  leftLabel  = 'Now';
+      rightEmoji = '🏃';  rightLabel = 'Goal';
+    } else {
+      // Maintain — balanced
+      leftEmoji  = '🧘'; leftLabel  = 'Now';
+      rightEmoji = '💪'; rightLabel = 'Goal';
+    }
+
+    // Create left figure
+    const left = document.createElement('div');
+    left.className = 'side-figure side-figure-left';
+    left.innerHTML = '<div class="side-figure-emoji">' + leftEmoji + '</div>'
+      + '<div class="side-figure-label">' + leftLabel + '</div>';
+
+    // Create right figure
+    const right = document.createElement('div');
+    right.className = 'side-figure side-figure-right';
+    right.innerHTML = '<div class="side-figure-emoji">' + rightEmoji + '</div>'
+      + '<div class="side-figure-label">' + rightLabel + '</div>';
+
+    document.body.appendChild(left);
+    document.body.appendChild(right);
+
+    // Fade in after a short delay
+    setTimeout(() => {
+      left.classList.add('visible');
+      right.classList.add('visible');
+      // Extra celebration bounce if goal reached
+      if (goalReached) {
+        left.style.animation = 'figure-float 1.5s ease-in-out infinite';
+        right.style.animation = 'figure-float 1.5s ease-in-out infinite';
+        right.style.animationDelay = '0.75s';
+      }
+    }, 600);
+  }
+};
+window.SideFigures = SideFigures;
 
 // ── App Init ──
 document.addEventListener('DOMContentLoaded', () => {

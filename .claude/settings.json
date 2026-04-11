@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp main.css css/main.css)",
+      "Bash(cp components.css css/components.css)",
+      "Bash(cp app.js js/app.js)",
+      "Bash(cp dashboard.js js/dashboard.js)",
+      "Bash(cp database.js js/database.js)"
+    ]
+  }
+}

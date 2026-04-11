@@ -1,6 +1,6 @@
 // ============================================
 // NK's Fit Journal — database.js
-// Food Database: Browse, search, filter, add custom foods
+// Food Database: Firebase-backed, user overrides
 // ============================================
 
 const FoodDatabase = (() => {
@@ -14,188 +14,350 @@ const FoodDatabase = (() => {
     bindAddCustom();
   };
 
+  // ── Stats ──
   const renderStats = () => {
     const all = FoodDB.getAll();
-    const statEl = document.getElementById('db-total');
-    const vegEl = document.getElementById('db-veg');
-    const nonvegEl = document.getElementById('db-nonveg');
-    const customEl = document.getElementById('db-custom');
-    if (statEl) statEl.textContent = all.length;
-    if (vegEl) vegEl.textContent = all.filter(f=>f.type==='veg').length;
-    if (nonvegEl) nonvegEl.textContent = all.filter(f=>f.type==='nonveg').length;
-    if (customEl) customEl.textContent = NKStorage.getCustomFoods().length;
+    const el = (id) => document.getElementById(id);
+    if (el('db-total'))  el('db-total').textContent  = all.length;
+    if (el('db-veg'))    el('db-veg').textContent    = all.filter(f => f.type === 'veg').length;
+    if (el('db-nonveg')) el('db-nonveg').textContent = all.filter(f => f.type === 'nonveg').length;
+    if (el('db-custom')) el('db-custom').textContent = NKStorage.getCustomFoods().length;
+    syncStatCardActive();
   };
 
+  const syncStatCardActive = () => {
+    document.querySelectorAll('.stat-filter-card').forEach(card => {
+      card.classList.toggle('active-filter', card.dataset.statFilter === currentFilter);
+    });
+    document.querySelectorAll('[data-db-filter]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.dbFilter === currentFilter);
+    });
+  };
+
+  const applyFilter = (filter) => {
+    currentFilter = filter;
+    renderFoods();
+    syncStatCardActive();
+    const grid = document.getElementById('foods-grid');
+    if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // ── Food Row HTML ──
+  const foodRowHTML = (food) => {
+    const isCustom = !!food.isCustom;
+    const isOverridden = !!food._overridden;
+    return '<div class="food-db-row" data-food-id="' + food.id + '">'
+      + '<div class="food-row-dot"><span class="' + (food.type === 'nonveg' ? 'nonveg-dot' : 'veg-dot') + '"></span></div>'
+      + '<div class="food-row-name">' + food.name
+        + (isCustom ? ' <span class="food-row-badge">Custom</span>' : '')
+        + (isOverridden ? ' <span class="food-row-badge" style="background:rgba(245,158,11,0.15);color:#F59E0B">Edited</span>' : '')
+      + '</div>'
+      + '<div class="food-row-cal">' + food.per100.calories + '<span> kcal</span></div>'
+      + '<div class="food-row-macro" style="color:#3B82F6">' + food.per100.protein + 'g<span>P</span></div>'
+      + '<div class="food-row-macro" style="color:#A78BFA">' + food.per100.carbs + 'g<span>C</span></div>'
+      + '<div class="food-row-macro" style="color:#FB923C">' + food.per100.fat + 'g<span>F</span></div>'
+      + '<div class="food-row-unit">per 100' + food.unit + '</div>'
+      + '<button class="food-row-menu-btn" data-id="' + food.id + '" data-custom="' + isCustom + '" title="Options">⋮</button>'
+      + '</div>';
+  };
+
+  // ── Render Foods ──
   const renderFoods = () => {
     const foods = FoodDB.searchFilter(searchQuery, currentFilter);
     const container = document.getElementById('foods-grid');
     if (!container) return;
 
     const countEl = document.getElementById('results-count');
-    if (countEl) countEl.textContent = `${foods.length} items`;
+    if (countEl) countEl.textContent = foods.length + ' items';
 
     if (foods.length === 0) {
-      container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
-        <span class="empty-state-icon">🔍</span>
-        <div class="empty-state-title">No foods found</div>
-        <div class="empty-state-desc">Try a different search or add a custom food item</div>
-      </div>`;
+      container.innerHTML = '<div class="empty-state"><span class="empty-state-icon">🔍</span><div class="empty-state-title">No foods found</div><div class="empty-state-desc">Try a different search or add a custom food item</div></div>';
       return;
     }
 
-    // Group by category
     const grouped = {};
-    foods.forEach(f => {
+    foods.forEach(function(f) {
       if (!grouped[f.category]) grouped[f.category] = [];
       grouped[f.category].push(f);
     });
 
-    container.innerHTML = Object.entries(grouped).map(([cat, items]) => `
-      <div class="db-category-section" style="grid-column:1/-1; margin-bottom:8px">
-        <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-          <span>${cat}</span>
-          <span style="background:var(--border-color);padding:2px 8px;border-radius:999px;font-size:0.7rem">${items.length}</span>
-        </div>
-        <div class="grid-3" style="gap:12px">
-          ${items.map(food => `
-            <div class="food-db-card card card-sm" data-food-id="${food.id}" style="cursor:pointer;transition:all 0.2s">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-                <div style="display:flex;align-items:center;gap:8px">
-                  <span class="${food.type==='nonveg'?'nonveg-dot':'veg-dot'}"></span>
-                  <span style="font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase">${food.type==='nonveg'?'Non-Veg':'Veg'}</span>
-                </div>
-                ${food.isCustom?'<span class="pill" style="font-size:0.65rem;padding:2px 8px;background:rgba(0,122,204,0.1);color:var(--accent-primary)">Custom</span>':''}
-              </div>
-              <div style="font-weight:600;font-size:0.92rem;margin-bottom:8px;color:var(--text-primary)">${food.name}</div>
-              <div style="font-family:var(--heading-font);font-size:1.5rem;font-weight:700;color:var(--accent-primary);line-height:1;margin-bottom:4px">${food.per100.calories}</div>
-              <div style="font-size:0.72rem;color:var(--text-muted)">kcal / 100${food.unit}</div>
-              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-color)">
-                <div style="text-align:center">
-                  <div style="font-weight:700;font-size:0.85rem;color:#3B82F6">${food.per100.protein}g</div>
-                  <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em">Protein</div>
-                </div>
-                <div style="text-align:center;border-left:1px solid var(--border-color);border-right:1px solid var(--border-color)">
-                  <div style="font-weight:700;font-size:0.85rem;color:#A78BFA">${food.per100.carbs}g</div>
-                  <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em">Carbs</div>
-                </div>
-                <div style="text-align:center">
-                  <div style="font-weight:700;font-size:0.85rem;color:#FB923C">${food.per100.fat}g</div>
-                  <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em">Fat</div>
-                </div>
-              </div>
-              ${food.isCustom?`<button class="btn btn-danger btn-sm w-full mt-8 delete-custom" data-id="${food.id}" style="margin-top:10px">Delete</button>`:''}
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `).join('');
+    let html = '';
+    Object.keys(grouped).forEach(function(cat) {
+      const items = grouped[cat];
+      html += '<div class="db-category-section" style="margin-bottom:20px">';
+      html += '<div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;gap:8px">';
+      html += '<span>' + cat + '</span><span style="background:var(--border-color);padding:2px 8px;border-radius:999px;font-size:0.7rem">' + items.length + '</span></div>';
+      html += '<div class="food-db-table">';
+      html += '<div class="food-db-table-header"><div></div><div>Food Name</div><div>Calories</div><div>Protein</div><div>Carbs</div><div>Fat</div><div>Per</div><div></div></div>';
+      items.forEach(function(food) { html += foodRowHTML(food); });
+      html += '</div></div>';
+    });
+    container.innerHTML = html;
+    bindRowEvents(container);
+  };
 
-    // Click to quick-log
-    container.querySelectorAll('.food-db-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('.delete-custom')) return;
-        const food = FoodDB.getById(card.dataset.foodId);
+  const renderFoodsCustomOnly = () => {
+    const foods = NKStorage.getCustomFoods();
+    const container = document.getElementById('foods-grid');
+    const countEl = document.getElementById('results-count');
+    if (countEl) countEl.textContent = foods.length + ' custom items';
+    if (!container) return;
+
+    if (foods.length === 0) {
+      container.innerHTML = '<div class="empty-state"><span class="empty-state-icon">✏️</span><div class="empty-state-title">No custom foods yet</div><div class="empty-state-desc">Click "Add Custom Food" to create your own</div></div>';
+      return;
+    }
+
+    let html = '<div class="db-category-section" style="margin-bottom:20px">';
+    html += '<div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-primary);margin-bottom:8px">My Custom Foods</div>';
+    html += '<div class="food-db-table">';
+    html += '<div class="food-db-table-header"><div></div><div>Food Name</div><div>Calories</div><div>Protein</div><div>Carbs</div><div>Fat</div><div>Per</div><div></div></div>';
+    foods.forEach(function(food) { html += foodRowHTML(food); });
+    html += '</div></div>';
+    container.innerHTML = html;
+    bindRowEvents(container);
+  };
+
+  // ── Row Events ──
+  const bindRowEvents = (container) => {
+    // Click row to quick log
+    container.querySelectorAll('.food-db-row').forEach(function(row) {
+      row.addEventListener('click', function(e) {
+        if (e.target.closest('.food-row-menu-btn')) return;
+        const food = FoodDB.getById(row.dataset.foodId);
         if (food) openQuickLog(food);
       });
     });
 
-    // Delete custom
-    container.querySelectorAll('.delete-custom').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+    // Three dots menu
+    container.querySelectorAll('.food-row-menu-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
         e.stopPropagation();
-        if (confirm('Delete this custom food?')) {
-          NKStorage.deleteCustomFood(btn.dataset.id);
-          renderStats(); renderFoods();
-          Toast.info('Custom food deleted');
+        openDotMenu(btn.dataset.id, btn.dataset.custom === 'true', btn);
+      });
+    });
+  };
+
+  // ── Three Dots Menu ──
+  let _activeMenu = null;
+  const openDotMenu = (foodId, isCustom, btnEl) => {
+    // Remove existing menu
+    if (_activeMenu) { _activeMenu.remove(); _activeMenu = null; }
+
+    const menu = document.createElement('div');
+    menu.className = 'dot-menu';
+    menu.style.cssText = 'position:fixed;z-index:9999;background:var(--bg-modal);border:1px solid var(--border-color);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:160px;overflow:hidden;';
+
+    const items = isCustom
+      ? [
+          { label: '✏️ Edit values', action: () => openEditModal(foodId, true) },
+          { label: '🗑️ Delete', action: () => deleteCustomFood(foodId), danger: true },
+        ]
+      : [
+          { label: '✏️ Edit values', action: () => openEditModal(foodId, false) },
+          { label: '↩️ Reset to defaults', action: () => resetFoodOverride(foodId) },
+        ];
+
+    items.forEach(item => {
+      const btn = document.createElement('button');
+      btn.style.cssText = 'display:block;width:100%;padding:11px 16px;text-align:left;background:none;border:none;cursor:pointer;font-size:0.85rem;color:' + (item.danger ? 'var(--error)' : 'var(--text-primary)') + ';transition:background 0.15s;';
+      btn.textContent = item.label;
+      btn.onmouseenter = () => { btn.style.background = 'var(--bg-secondary)'; };
+      btn.onmouseleave = () => { btn.style.background = 'none'; };
+      btn.onclick = () => { menu.remove(); _activeMenu = null; item.action(); };
+      menu.appendChild(btn);
+    });
+
+    // Position near button
+    const rect = btnEl.getBoundingClientRect();
+    menu.style.top = (rect.bottom + 4) + 'px';
+    menu.style.right = (window.innerWidth - rect.right) + 'px';
+    document.body.appendChild(menu);
+    _activeMenu = menu;
+
+    // Close on outside click
+    setTimeout(() => {
+      document.addEventListener('click', function handler() {
+        menu.remove(); _activeMenu = null;
+        document.removeEventListener('click', handler);
+      }, { once: true });
+    }, 10);
+  };
+
+  // ── Edit Modal ──
+  const openEditModal = (foodId, isCustom) => {
+    const food = FoodDB.getById(foodId);
+    if (!food) return;
+
+    const existing = document.getElementById('edit-food-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'edit-food-modal';
+    modal.className = 'modal-overlay';
+    modal.style.display = 'flex';
+    modal.innerHTML = '<div class="modal">'
+      + '<div class="modal-header"><h3 class="modal-title">✏️ Edit: ' + food.name + '</h3>'
+      + '<button class="modal-close" onclick="document.getElementById(\'edit-food-modal\').remove()">✕</button></div>'
+      + '<p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px">Values per 100' + food.unit + '. Changes apply only to you.</p>'
+      + '<div class="input-row">'
+      + '<div class="form-group"><label class="form-label">Calories (kcal)</label><input type="number" id="ef-calories" class="form-input" value="' + food.per100.calories + '" min="0" step="0.1"/></div>'
+      + '<div class="form-group"><label class="form-label">Protein (g)</label><input type="number" id="ef-protein" class="form-input" value="' + food.per100.protein + '" min="0" step="0.1"/></div>'
+      + '</div>'
+      + '<div class="input-row">'
+      + '<div class="form-group"><label class="form-label">Carbs (g)</label><input type="number" id="ef-carbs" class="form-input" value="' + food.per100.carbs + '" min="0" step="0.1"/></div>'
+      + '<div class="form-group"><label class="form-label">Fat (g)</label><input type="number" id="ef-fat" class="form-input" value="' + food.per100.fat + '" min="0" step="0.1"/></div>'
+      + '</div>'
+      + '<div style="display:flex;gap:10px;margin-top:8px">'
+      + '<button class="btn btn-secondary w-full" onclick="document.getElementById(\'edit-food-modal\').remove()">Cancel</button>'
+      + '<button class="btn btn-primary w-full" id="ef-save-btn">💾 Save</button>'
+      + '</div></div>';
+
+    document.body.appendChild(modal);
+
+    document.getElementById('ef-save-btn').onclick = () => {
+      const per100 = {
+        calories: parseFloat(document.getElementById('ef-calories').value) || 0,
+        protein:  parseFloat(document.getElementById('ef-protein').value)  || 0,
+        carbs:    parseFloat(document.getElementById('ef-carbs').value)    || 0,
+        fat:      parseFloat(document.getElementById('ef-fat').value)      || 0,
+      };
+      if (isCustom) {
+        // Update custom food
+        const customs = NKStorage.getCustomFoods();
+        const idx = customs.findIndex(f => f.id === foodId);
+        if (idx >= 0) { customs[idx].per100 = per100; NKStorage.saveCustomFoods(customs); }
+      } else {
+        FoodDB.setOverride(foodId, per100);
+      }
+      modal.remove();
+      renderStats();
+      renderFoods();
+      Toast.success('✅ ' + food.name + ' updated!');
+    };
+  };
+
+  const resetFoodOverride = (foodId) => {
+    const food = FoodDB.getOriginal(foodId);
+    if (!food) return;
+    FoodDB.resetOverride(foodId);
+    renderStats();
+    renderFoods();
+    Toast.success('↩️ Reset to default values');
+  };
+
+  const deleteCustomFood = (foodId) => {
+    if (!confirm('Delete this custom food?')) return;
+    NKStorage.deleteCustomFood(foodId);
+    renderStats();
+    renderFoods();
+    Toast.info('Custom food deleted');
+  };
+
+  // ── Quick Log Modal ──
+  const openQuickLog = (food) => {
+    window._qlFood = food;
+    const nameEl = document.getElementById('ql-food-name');
+    const qtyEl  = document.getElementById('ql-qty');
+    const unitEl = document.getElementById('ql-unit');
+    if (nameEl) nameEl.textContent = food.name;
+    if (unitEl) unitEl.textContent = food.unit;
+    const updateMacros = function() {
+      const qty = parseFloat(qtyEl ? qtyEl.value : 0) || 0;
+      const m = FoodDB.calcMacros(food, qty);
+      const el = (id) => document.getElementById(id);
+      if (el('ql-calories')) el('ql-calories').textContent = Math.round(m.calories);
+      if (el('ql-protein'))  el('ql-protein').textContent  = Utils.round1(m.protein);
+      if (el('ql-carbs'))    el('ql-carbs').textContent    = Utils.round1(m.carbs);
+      if (el('ql-fat'))      el('ql-fat').textContent      = Utils.round1(m.fat);
+    };
+    if (qtyEl) { qtyEl.value = food.defaultQty || 100; qtyEl.oninput = updateMacros; updateMacros(); }
+    Modal.open('quick-log-modal');
+  };
+
+  // ── Search ──
+  const bindSearch = () => {
+    const searchEl = document.getElementById('db-search');
+    if (searchEl) searchEl.addEventListener('input', function() { searchQuery = searchEl.value; renderFoods(); });
+  };
+
+  // ── Filters ──
+  const bindFilters = () => {
+    document.querySelectorAll('[data-db-filter]').forEach(function(btn) {
+      btn.addEventListener('click', function() { applyFilter(btn.dataset.dbFilter); });
+    });
+    document.querySelectorAll('.stat-filter-card').forEach(function(card) {
+      card.addEventListener('click', function() {
+        if (card.dataset.statFilter === 'custom') {
+          currentFilter = 'custom';
+          renderFoodsCustomOnly();
+          syncStatCardActive();
+        } else {
+          applyFilter(card.dataset.statFilter);
         }
       });
     });
   };
 
-  const openQuickLog = (food) => {
-    const modal = document.getElementById('quick-log-modal');
-    document.getElementById('ql-food-name').textContent = food.name;
-    const qtyEl = document.getElementById('ql-qty');
-    const unitEl = document.getElementById('ql-unit');
-    if (unitEl) unitEl.textContent = food.unit;
-    if (qtyEl) {
-      qtyEl.value = food.defaultQty || 100;
-      const updatePreview = () => {
-        const qty = parseFloat(qtyEl.value) || 0;
-        const m = FoodDB.calcMacros(food, qty);
-        ['calories','protein','carbs','fat'].forEach(k => {
-          const el = document.getElementById('ql-' + k);
-          if (el) el.textContent = k==='calories' ? Math.round(m[k]) : Utils.round1(m[k]);
-        });
-      };
-      qtyEl.addEventListener('input', updatePreview);
-      updatePreview();
-    }
-    const logBtn = document.getElementById('ql-log-btn');
-    if (logBtn) {
-      logBtn.onclick = () => {
-        const qty = parseFloat(qtyEl?.value) || 0;
-        if (qty <= 0) { Toast.error('Enter a valid quantity'); return; }
-        const macros = FoodDB.calcMacros(food, qty);
-        NKStorage.addFoodEntry(Utils.today(), { foodId:food.id, name:food.name, qty, unit:food.unit, type:food.type, ...macros });
-        Modal.close('quick-log-modal');
-        Toast.success(`✅ ${food.name} logged for today!`);
-      };
-    }
-    Modal.open('quick-log-modal');
-  };
-
-  const bindSearch = () => {
-    const el = document.getElementById('db-search');
-    if (el) el.addEventListener('input', () => { searchQuery = el.value; renderFoods(); });
-  };
-
-  const bindFilters = () => {
-    document.querySelectorAll('[data-db-filter]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentFilter = btn.dataset.dbFilter;
-        document.querySelectorAll('[data-db-filter]').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        renderFoods();
-      });
-    });
-  };
-
+  // ── Add Custom Food ──
   const bindAddCustom = () => {
-    const btn = document.getElementById('add-custom-btn');
-    if (btn) btn.addEventListener('click', () => Modal.open('add-custom-modal'));
+    const openBtn = document.getElementById('add-custom-btn');
+    if (openBtn) openBtn.addEventListener('click', function() { Modal.open('add-custom-modal'); });
+
+    const qlBtn = document.getElementById('ql-log-btn');
+    if (qlBtn) qlBtn.addEventListener('click', function() {
+      const food = window._qlFood;
+      if (!food) return;
+      const qty = parseFloat(document.getElementById('ql-qty')?.value) || 0;
+      if (qty <= 0) { Toast.error('Enter a valid quantity'); return; }
+      const macros = FoodDB.calcMacros(food, qty);
+      const entry = { foodId: food.id, name: food.name, qty, unit: food.unit, type: food.type, ...macros };
+      NKStorage.addFoodEntry(Utils.today(), entry);
+      Modal.close('quick-log-modal');
+      Toast.success('✅ ' + food.name + ' logged for today!');
+      window._qlFood = null;
+    });
 
     const saveBtn = document.getElementById('save-custom-btn');
-    if (saveBtn) saveBtn.addEventListener('click', () => {
-      const name = document.getElementById('c-name')?.value?.trim();
-      const type = document.getElementById('c-type')?.value;
-      const unit = document.getElementById('c-unit')?.value || 'g';
+    if (saveBtn) saveBtn.addEventListener('click', function() {
+      const name     = document.getElementById('c-name')?.value?.trim();
       const calories = parseFloat(document.getElementById('c-calories')?.value);
-      const protein = parseFloat(document.getElementById('c-protein')?.value);
-      const carbs = parseFloat(document.getElementById('c-carbs')?.value);
-      const fat = parseFloat(document.getElementById('c-fat')?.value);
-
-      if (!name) { Toast.error('Enter a food name'); return; }
-      if (isNaN(calories) || calories < 0) { Toast.error('Enter valid calories'); return; }
-      if (isNaN(protein) || isNaN(carbs) || isNaN(fat)) { Toast.error('Enter all macro values'); return; }
-
+      const protein  = parseFloat(document.getElementById('c-protein')?.value)  || 0;
+      const carbs    = parseFloat(document.getElementById('c-carbs')?.value)    || 0;
+      const fat      = parseFloat(document.getElementById('c-fat')?.value)      || 0;
+      const type     = document.getElementById('c-type')?.value     || 'veg';
+      const unit     = document.getElementById('c-unit')?.value     || 'g';
       const category = document.getElementById('c-category')?.value || 'Custom';
-      NKStorage.addCustomFood({ name, type, unit, category, per100:{ calories, protein, carbs, fat }, defaultQty:100 });
+      if (!name) { Toast.error('Please enter a food name'); return; }
+      if (isNaN(calories) || calories < 0) { Toast.error('Enter valid calories'); return; }
+      NKStorage.addCustomFood({ name, type, unit, category, per100: { calories, protein, carbs, fat }, defaultQty: 100 });
       Modal.close('add-custom-modal');
-      // Reset form
-      ['c-name','c-calories','c-protein','c-carbs','c-fat'].forEach(id => {
+      ['c-name','c-calories','c-protein','c-carbs','c-fat'].forEach(function(id) {
         const el = document.getElementById(id); if (el) el.value = '';
       });
       renderStats(); renderFoods();
-      Toast.success(`✅ "${name}" added to database!`);
+      Toast.success('✅ "' + name + '" added to database!');
     });
   };
 
   return { init };
 })();
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async function() {
   BGAnim.init('database');
-  await syncFromCloud();
+  // Show loading state in grid while fetching
+  const grid = document.getElementById('foods-grid');
+  if (grid) grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)"><div style="font-size:2rem;margin-bottom:12px">⏳</div><div>Loading food database...</div></div>';
+
+  await syncFromCloud(); // this calls FoodDB.load() + syncOverridesFromCloud()
+
+  // Init after foods are loaded
   FoodDatabase.init();
+  SideFigures.init();
+
+  // Reveal content
+  const loader = document.getElementById('page-loader');
+  const pageContent = document.getElementById('page-content');
+  if (loader) { loader.classList.add('hidden'); setTimeout(function() { loader.style.display='none'; }, 350); }
+  if (pageContent) { requestAnimationFrame(function() { pageContent.classList.add('ready'); }); }
 });

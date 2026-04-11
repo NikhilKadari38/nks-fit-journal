@@ -1,9 +1,7 @@
 // ============================================
 // NK's Fit Journal — firebase-config.js
-// Firebase + Firestore fully wired
-// Data strategy: Write to localStorage instantly (fast UI)
-//                + sync to Firestore silently (cloud backup)
-//                + on page load, pull latest from Firestore
+// Multi-user Firestore storage
+// Each user's data stored under userData/{username}/
 // ============================================
 
 const firebaseConfig = {
@@ -15,126 +13,115 @@ const firebaseConfig = {
   appId: "1:19421776291:web:e1430c8cee3254a935f216"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Single user ID (expand for multi-user later)
-const USER_ID = 'nikhil';
-const userRef = () => db.collection('users').doc(USER_ID);
+// Get current user's Firestore root
+const userRef = () => {
+  const username = Auth.getCurrentUser();
+  if (!username) return null;
+  return db.collection('userData').doc(username);
+};
 
-// ── Local cache prefix ──
-const PREFIX = 'nkj_';
+// Local cache prefix (per user)
+const getPrefix = () => {
+  const username = Auth.getCurrentUser();
+  return username ? `nkj_${username}_` : 'nkj_guest_';
+};
 
 const local = {
   get: (key) => {
-    try { return JSON.parse(localStorage.getItem(PREFIX + key)); }
+    try { return JSON.parse(localStorage.getItem(getPrefix() + key)); }
     catch { return null; }
   },
   set: (key, value) => {
-    try { localStorage.setItem(PREFIX + key, JSON.stringify(value)); return true; }
+    try { localStorage.setItem(getPrefix() + key, JSON.stringify(value)); return true; }
     catch { return false; }
   },
-  remove: (key) => localStorage.removeItem(PREFIX + key),
+  remove: (key) => localStorage.removeItem(getPrefix() + key),
   keys: (prefix) => Object.keys(localStorage)
-    .filter(k => k.startsWith(PREFIX + (prefix || '')))
-    .map(k => k.replace(PREFIX, ''))
+    .filter(k => k.startsWith(getPrefix() + (prefix || '')))
+    .map(k => k.replace(getPrefix(), ''))
 };
 
-// ── Firestore helpers ──
+// Firestore helpers
 const cloud = {
-  // Save to Firestore silently (don't block UI)
   set: async (collection, docId, data) => {
     try {
-      await userRef().collection(collection).doc(docId).set(data, { merge: true });
-    } catch (e) {
-      console.warn('Cloud sync failed (offline?):', e.message);
-    }
+      const ref = userRef();
+      if (!ref) return;
+      await ref.collection(collection).doc(docId).set(data, { merge: true });
+    } catch (e) { console.warn('Cloud sync failed:', e.message); }
   },
   get: async (collection, docId) => {
     try {
-      const doc = await userRef().collection(collection).doc(docId).get();
+      const ref = userRef();
+      if (!ref) return null;
+      const doc = await ref.collection(collection).doc(docId).get();
       return doc.exists ? doc.data() : null;
-    } catch (e) {
-      console.warn('Cloud read failed:', e.message);
-      return null;
-    }
+    } catch (e) { console.warn('Cloud read failed:', e.message); return null; }
   },
   getAll: async (collection) => {
     try {
-      const snap = await userRef().collection(collection).get();
+      const ref = userRef();
+      if (!ref) return {};
+      const snap = await ref.collection(collection).get();
       const result = {};
       snap.forEach(doc => result[doc.id] = doc.data());
       return result;
-    } catch (e) {
-      console.warn('Cloud getAll failed:', e.message);
-      return {};
-    }
+    } catch (e) { console.warn('Cloud getAll failed:', e.message); return {}; }
   },
   delete: async (collection, docId) => {
     try {
-      await userRef().collection(collection).doc(docId).delete();
-    } catch (e) {
-      console.warn('Cloud delete failed:', e.message);
-    }
+      const ref = userRef();
+      if (!ref) return;
+      await ref.collection(collection).doc(docId).delete();
+    } catch (e) { console.warn('Cloud delete failed:', e.message); }
   }
 };
 
-// ── Full Firestore → localStorage sync on page load ──
+// Sync from Firebase to localStorage on page load
 const syncFromCloud = async () => {
   try {
-    console.log('🔄 Syncing from Firebase...');
-
-    // Profile
     const profile = await cloud.get('meta', 'profile');
     if (profile) local.set('profile', profile);
 
-    // Settings
     const settings = await cloud.get('meta', 'settings');
     if (settings) local.set('settings', settings);
 
-    // Custom foods
     const customFoods = await cloud.get('meta', 'customFoods');
     if (customFoods?.items) local.set('custom_foods', customFoods.items);
 
-    // Food logs (all dates)
     const logs = await cloud.getAll('foodlogs');
     Object.entries(logs).forEach(([date, data]) => {
       if (data?.entries) local.set('foodlog_' + date, data.entries);
     });
 
-    // Weights
     const weights = await cloud.getAll('weights');
     Object.entries(weights).forEach(([date, data]) => {
       local.set('weight_' + date, data);
     });
 
-    // Water
     const water = await cloud.getAll('water');
     Object.entries(water).forEach(([date, data]) => {
       local.set('water_' + date, data);
     });
 
-    console.log('✅ Firebase sync complete');
     return true;
   } catch (e) {
-    console.warn('Sync from cloud failed, using local data:', e.message);
+    console.warn('Sync failed, using local data:', e.message);
     return false;
   }
 };
 
-// ── NKStorage — write-through (local first + cloud backup) ──
 const NKStorage = {
-
-  // Profile
   getProfile: () => local.get('profile'),
   setProfile: (data) => {
     const payload = { ...data, updatedAt: new Date().toISOString() };
     local.set('profile', payload);
-    cloud.set('meta', 'profile', payload); // async, non-blocking
+    cloud.set('meta', 'profile', payload);
   },
 
-  // Food Log
   getFoodLog: (date) => local.get('foodlog_' + date) || [],
   setFoodLog: (date, entries) => {
     local.set('foodlog_' + date, entries);
@@ -156,7 +143,6 @@ const NKStorage = {
     .map(k => k.replace('foodlog_', ''))
     .sort((a, b) => b.localeCompare(a)),
 
-  // Weight
   getWeight: (date) => local.get('weight_' + date),
   setWeight: (date, kg) => {
     const payload = { kg, loggedAt: new Date().toISOString() };
@@ -173,7 +159,6 @@ const NKStorage = {
     .filter(w => w.kg)
     .sort((a, b) => a.date.localeCompare(b.date)),
 
-  // Water
   getWater: (date) => local.get('water_' + date) || { ml: 0 },
   setWater: (date, ml) => {
     const payload = { ml, updatedAt: new Date().toISOString() };
@@ -181,7 +166,6 @@ const NKStorage = {
     cloud.set('water', date, payload);
   },
 
-  // Custom Foods
   getCustomFoods: () => local.get('custom_foods') || [],
   addCustomFood: (food) => {
     const foods = NKStorage.getCustomFoods();
@@ -191,36 +175,60 @@ const NKStorage = {
     cloud.set('meta', 'customFoods', { items: foods, updatedAt: new Date().toISOString() });
     return newFood;
   },
+  saveCustomFoods: (foods) => {
+    const username = Auth.getCurrentUser();
+    if (!username) return;
+    local.set('customFoods', foods);
+    // Sync each to Firebase
+    foods.forEach(food => {
+      cloud.set('foodlogs', 'custom_' + food.id, food).catch(() => {});
+    });
+  },
   deleteCustomFood: (id) => {
     const foods = NKStorage.getCustomFoods().filter(f => f.id !== id);
     local.set('custom_foods', foods);
     cloud.set('meta', 'customFoods', { items: foods, updatedAt: new Date().toISOString() });
   },
 
-  // Settings
   getSettings: () => local.get('settings') || { theme: 'light', workoutDays: [] },
   setSettings: (data) => {
     local.set('settings', data);
     cloud.set('meta', 'settings', data);
   },
   updateSettings: (patch) => {
-    const current = NKStorage.getSettings();
-    NKStorage.setSettings({ ...current, ...patch });
+    NKStorage.setSettings({ ...NKStorage.getSettings(), ...patch });
   },
-
-  // Workout day toggle
-  isWorkoutDay: (date) => (NKStorage.getSettings().workoutDays || []).includes(date),
-  toggleWorkoutDay: (date) => {
+  // Day type: 'rest' | 'moderate' | 'full'
+  getDayType: (date) => {
     const settings = NKStorage.getSettings();
-    const days = settings.workoutDays || [];
-    const idx = days.indexOf(date);
-    if (idx >= 0) days.splice(idx, 1);
-    else days.push(date);
-    NKStorage.updateSettings({ workoutDays: days });
-    return idx < 0;
-  }
+    return (settings.dayTypes || {})[date] || 'rest';
+  },
+  setDayType: (date, type) => {
+    const settings = NKStorage.getSettings();
+    const dayTypes = settings.dayTypes || {};
+    dayTypes[date] = type;
+    NKStorage.updateSettings({ dayTypes: dayTypes });
+    return type;
+  },
+  cycleDayType: (date) => {
+    const current = NKStorage.getDayType(date);
+    const next = current === 'rest' ? 'moderate' : current === 'moderate' ? 'full' : 'rest';
+    return NKStorage.setDayType(date, next);
+  },
+  // Keep backward compat
+  isWorkoutDay: (date) => NKStorage.getDayType(date) !== 'rest',
+  toggleWorkoutDay: (date) => NKStorage.cycleDayType(date) !== 'rest'
 };
 
-// Expose globally
 window.NKStorage = NKStorage;
-window.syncFromCloud = syncFromCloud;
+
+// Enhanced syncFromCloud — also syncs food overrides
+const _origSync = syncFromCloud;
+window.syncFromCloud = async () => {
+  await _origSync();
+  // Load global foods from Firebase (with cache)
+  if (window.FoodDB) {
+    await FoodDB.load();
+    await FoodDB.syncOverridesFromCloud();
+  }
+};

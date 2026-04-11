@@ -1,7 +1,7 @@
 # NK's Fit Journal — Full Project Context
 
 ## What this project is
-A personal fitness & nutrition tracking web app built with vanilla HTML/CSS/JS + Firebase Firestore. Deployed on GitHub Pages at `https://NikhilKadari38.github.io/nks-fit-journal`. All files are in a FLAT folder structure (no subfolders for HTML/CSS/JS — everything at root level except JS files are in `/js/` folder).
+A personal fitness & nutrition tracking web app built with vanilla HTML/CSS/JS + Firebase Firestore. Deployed on GitHub Pages at `https://NikhilKadari38.github.io/nks-fit-journal`. HTML files are at root level, CSS files are in `/css/` folder, JS files are in `/js/` folder.
 
 ---
 
@@ -25,9 +25,9 @@ Fitness/
 ├── progress.html       ← Charts (weight, calories, macros)
 ├── profile.html        ← Profile settings + Admin panel
 ├── login.html          ← Sign in / Register
-├── main.css            ← Global styles, CSS variables, light/dark themes
-├── components.css      ← All UI components (navbar, cards, buttons etc.)
-├── fooddb.js           ← NEW: Firebase food database manager (replaces fooddata.js)
+├── css/
+│   ├── main.css        ← Global styles, CSS variables, light/dark themes
+│   └── components.css  ← All UI components (navbar, cards, buttons etc.)
 ├── js/
 │   ├── firebase-config.js  ← Firebase init + NKStorage API + syncFromCloud
 │   ├── auth.js             ← Custom auth system
@@ -36,6 +36,7 @@ Fitness/
 │   ├── dashboard.js        ← Dashboard logic
 │   ├── foodlog.js          ← Food log logic + date navigation
 │   ├── database.js         ← Database page + three-dots menu + edit/reset
+│   ├── fooddb.js           ← Firebase food database manager (replaces fooddata.js)
 │   ├── progress.js         ← Chart.js charts
 │   └── profile.js          ← Profile + BMR calc + Admin CSV upload/download
 ```
@@ -230,7 +231,7 @@ Shown in page margins on wide screens (>1350px):
 
 4. **Template literals in JS files** — avoid escaped backticks, use string concatenation instead
 
-5. **Flat file structure** — all HTML at root, JS in /js/ folder, NO subfolders for assets
+5. **File structure** — all HTML at root, CSS in /css/ folder, JS in /js/ folder
 
 ---
 
@@ -263,5 +264,5 @@ profile:   p-name, p-dob, p-weight, p-height, p-goal-weight, p-dietary-pref,
 - Never use `toISOString()` for dates — always `Utils.today()`
 - Never hardcode personal values (76kg, 65kg, 1462 kcal etc.)
 - Never use template literal backticks in Python-generated JS (use string concatenation)
-- Never add subfolders — flat structure only
+- Never add new subfolders beyond /css/ and /js/ — keep HTML at root
 - Never break the script load order

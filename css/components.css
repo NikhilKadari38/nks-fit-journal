@@ -390,9 +390,10 @@
   display: flex; align-items: center; gap: 20px;
 }
 .water-glass-svg {
-  position: relative;
-  width: 52px; height: 72px;
+  display: block;
+  width: 60px; height: 96px;
   flex-shrink: 0;
+  overflow: hidden;
 }
 .water-glass-info { flex: 1; }
 .water-glass-ml { font-family: var(--heading-font); font-size: 1.6rem; font-weight: 700; color: var(--text-primary); }
@@ -599,3 +600,133 @@
   .nav-mobile { display: block; }
   .nav-brand-name { font-size: 1rem; }
 }
+
+/* ── BOTTOM NAV (mobile only) ── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 900;
+  background: var(--bg-modal);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-color);
+  padding: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-nav-inner {
+  display: flex;
+  align-items: stretch;
+  height: 60px;
+}
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: all 0.15s;
+  padding: 6px 2px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  position: relative;
+}
+.bottom-nav-item.active {
+  color: var(--accent-primary);
+}
+.bottom-nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 2px;
+  background: var(--accent-primary);
+  border-radius: 0 0 4px 4px;
+}
+.bottom-nav-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.bottom-nav-label {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+/* Add padding to main content so it's not hidden behind bottom nav */
+@media(max-width: 768px) {
+  .bottom-nav { display: flex; flex-direction: column; }
+  main { padding-bottom: 72px !important; }
+  /* Hide hamburger on mobile since we have bottom nav */
+  .nav-hamburger { display: none !important; }
+  .nav-mobile { display: none !important; }
+  /* Slim down top navbar on mobile */
+  .navbar-inner { padding: 0 14px; }
+  .nav-actions { gap: 6px; }
+  .btn-logout span { display: none; }
+}
+
+/* ── Food Database Row Format ── */
+.food-db-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.food-db-row {
+  display: grid;
+  grid-template-columns: 20px 1fr 90px 60px 60px 60px 70px 60px;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 0.85rem;
+}
+.food-db-row:last-child { border-bottom: none; }
+.food-db-row:hover { background: var(--bg-secondary); }
+.food-row-dot { display:flex; align-items:center; justify-content:center; }
+.food-row-name { font-weight: 600; color: var(--text-primary); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.food-row-badge { font-size:0.62rem; padding:1px 6px; background:rgba(0,122,204,0.12); color:var(--accent-secondary); border-radius:999px; margin-left:6px; font-weight:600; vertical-align:middle; }
+.food-row-cal { font-weight: 700; color: var(--accent-primary); font-family: var(--heading-font); font-size:0.92rem; text-align:right; }
+.food-row-cal span { font-size:0.65rem; color:var(--text-muted); font-weight:400; margin-left:2px; font-family:var(--body-font); }
+.food-row-macro { font-weight: 700; font-size:0.82rem; text-align:right; }
+.food-row-macro span { font-size:0.62rem; font-weight:600; margin-left:1px; opacity:0.7; }
+.food-row-unit { font-size:0.68rem; color:var(--text-muted); text-align:center; }
+.food-row-log-btn {
+  font-size:0.72rem; font-weight:700; color:var(--accent-primary);
+  border:1.5px solid var(--accent-primary); border-radius:6px;
+  padding:3px 8px; text-align:center; opacity:0.7;
+  transition:all 0.15s;
+}
+.food-db-row:hover .food-row-log-btn { opacity:1; background:var(--accent-primary); color:white; }
+.food-row-delete {
+  background:none; border:none; cursor:pointer;
+  font-size:1rem; padding:4px; border-radius:6px;
+  opacity:0.5; transition:all 0.15s; text-align:center;
+}
+.food-row-delete:hover { opacity:1; background:rgba(239,68,68,0.1); }
+
+/* Table header row */
+.food-db-table-header {
+  display: grid;
+  grid-template-columns: 20px 1fr 90px 60px 60px 60px 70px 60px;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size:0.65rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:0.06em; color:var(--text-muted);
+  background:var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+.food-db-table-header div:not(:nth-child(2)) { text-align:right; }
+.food-db-table-header div:nth-child(2) { text-align:left; }
+
+/* Mobile table handled in database.html inline styles */

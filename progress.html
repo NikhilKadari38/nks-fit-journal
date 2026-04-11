@@ -4,9 +4,16 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Progress — NK's Fit Journal</title>
-  <link rel="stylesheet" href="css/main.css"/>
-  <link rel="stylesheet" href="css/components.css"/>
+  <link rel="stylesheet" href="main.css"/>
+  <link rel="stylesheet" href="components.css"/>
   <style>
+    /* Smooth load */
+    .page-loader { position:fixed;inset:0;z-index:9999;background:var(--bg-primary);display:flex;align-items:center;justify-content:center;transition:opacity 0.3s ease; }
+    .page-loader.hidden { opacity:0;pointer-events:none; }
+    .loader-spinner { width:36px;height:36px;border-radius:50%;border:3px solid var(--border-color);border-top-color:var(--accent-primary);animation:spin 0.7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .page-content { opacity:0;transition:opacity 0.35s ease; }
+    .page-content.ready { opacity:1; }
     .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
     .chart-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:24px; backdrop-filter:blur(16px); }
     .chart-title { font-family:var(--heading-font); font-size:1.1rem; font-weight:600; margin-bottom:4px; }
@@ -19,8 +26,9 @@
     @media(max-width:800px) { .charts-grid{grid-template-columns:1fr} }
   </style>
 </head>
-<body>
+<body data-page="progress">
 <canvas id="bg-canvas"></canvas>
+<div class="page-loader" id="page-loader"><div class="loader-spinner"></div></div>
 <div class="site-wrapper">
   <nav class="navbar">
     <div class="navbar-inner">
@@ -35,6 +43,7 @@
       </ul>
       <div class="nav-actions">
         <button class="theme-toggle"><div class="theme-toggle-track"><div class="theme-toggle-thumb"><span class="theme-toggle-sun">☀️</span><span class="theme-toggle-moon">🌙</span></div></div></button>
+        <button class="btn-logout" onclick="Auth.logout()" title="Logout">🚪 Logout</button>
         <button class="nav-hamburger" id="nav-hamburger"><span></span><span></span><span></span></button>
       </div>
     </div>
@@ -51,7 +60,7 @@
   </div>
 
   <main>
-    <div class="container">
+    <div class="container page-content" id="page-content">
       <div class="page-header">
         <div>
           <h1 class="page-title">Progress</h1>
@@ -140,10 +149,50 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
-<script src="js/app.js"></script>
-<script src="js/animations.js"></script>
-<script src="js/fooddata.js"></script>
-<script src="js/progress.js"></script>
+<script src="firebase-config.js"></script>
+  <script src="auth.js"></script>
+<script src="app.js"></script>
+<script src="animations.js"></script>
+<script src="fooddb.js"></script>
+<script src="progress.js"></script>
+
+<script>
+// Auth guard
+(function() {
+  const user = Auth.requireAuth();
+  if (!user) return;
+  // Show username in navbar
+  const el = document.createElement('span');
+  el.style.cssText = 'font-size:0.82rem;color:var(--text-muted);font-weight:600;padding:0 8px';
+  el.textContent = '👤 ' + user;
+  const actions = document.querySelector('.nav-actions');
+  if (actions) actions.insertBefore(el, actions.firstChild);
+})();
+</script>
+<!-- Bottom Nav (mobile) -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a href="dashboard.html" class="bottom-nav-item ">
+      <span class="bottom-nav-icon">📊</span>
+      <span class="bottom-nav-label">Dashboard</span>
+    </a>
+    <a href="foodlog.html" class="bottom-nav-item ">
+      <span class="bottom-nav-icon">🍽️</span>
+      <span class="bottom-nav-label">Food Log</span>
+    </a>
+    <a href="database.html" class="bottom-nav-item ">
+      <span class="bottom-nav-icon">🗄️</span>
+      <span class="bottom-nav-label">Database</span>
+    </a>
+    <a href="progress.html" class="bottom-nav-item active">
+      <span class="bottom-nav-icon">📈</span>
+      <span class="bottom-nav-label">Progress</span>
+    </a>
+    <a href="profile.html" class="bottom-nav-item ">
+      <span class="bottom-nav-icon">👤</span>
+      <span class="bottom-nav-label">Profile</span>
+    </a>
+  </div>
+</nav>
 </body>
 </html>

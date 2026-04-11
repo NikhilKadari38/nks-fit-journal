@@ -4,9 +4,16 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Profile — NK's Fit Journal</title>
-  <link rel="stylesheet" href="css/main.css"/>
-  <link rel="stylesheet" href="css/components.css"/>
+  <link rel="stylesheet" href="main.css"/>
+  <link rel="stylesheet" href="components.css"/>
   <style>
+    /* Smooth load */
+    .page-loader { position:fixed;inset:0;z-index:9999;background:var(--bg-primary);display:flex;align-items:center;justify-content:center;transition:opacity 0.3s ease; }
+    .page-loader.hidden { opacity:0;pointer-events:none; }
+    .loader-spinner { width:36px;height:36px;border-radius:50%;border:3px solid var(--border-color);border-top-color:var(--accent-primary);animation:spin 0.7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .page-content { opacity:0;transition:opacity 0.35s ease; }
+    .page-content.ready { opacity:1; }
     .profile-grid { display:grid; grid-template-columns:320px 1fr; gap:24px; align-items:start; }
     .avatar-card { text-align:center; padding:28px 20px; overflow:hidden; box-sizing:border-box; }
     .avatar { width:84px; height:84px; border-radius:50%; background:linear-gradient(135deg,var(--accent-primary),var(--accent-orange)); display:flex; align-items:center; justify-content:center; font-family:var(--heading-font); font-size:1.9rem; font-weight:700; color:white; margin:0 auto 14px; box-shadow:0 8px 24px rgba(229,9,20,0.35); }
@@ -22,8 +29,9 @@
     @media(max-width:500px) { .stats-section{grid-template-columns:repeat(2,1fr)} }
   </style>
 </head>
-<body>
+<body data-page="profile">
 <canvas id="bg-canvas"></canvas>
+<div class="page-loader" id="page-loader"><div class="loader-spinner"></div></div>
 <div class="site-wrapper">
   <nav class="navbar">
     <div class="navbar-inner">
@@ -38,6 +46,7 @@
       </ul>
       <div class="nav-actions">
         <button class="theme-toggle"><div class="theme-toggle-track"><div class="theme-toggle-thumb"><span class="theme-toggle-sun">☀️</span><span class="theme-toggle-moon">🌙</span></div></div></button>
+        <button class="btn-logout" onclick="Auth.logout()" title="Logout">🚪 Logout</button>
         <button class="nav-hamburger" id="nav-hamburger"><span></span><span></span><span></span></button>
       </div>
     </div>
@@ -54,7 +63,7 @@
   </div>
 
   <main>
-    <div class="container">
+    <div class="container page-content" id="page-content">
       <div class="page-header">
         <div>
           <h1 class="page-title">Profile</h1>
@@ -68,7 +77,7 @@
         <div style="display:flex;flex-direction:column;gap:16px">
           <!-- Avatar + Name -->
           <div class="card avatar-card anim-fade-in">
-            <div class="avatar" id="avatar-initials">NK</div>
+            <div class="avatar" id="avatar-initials">?</div>
             <div class="profile-name" id="display-name">Nikhil Kadari</div>
             <div class="profile-tag" id="display-diet">🌱 Vegetarian</div>
             <div class="bmi-badge">BMI: <strong id="display-bmi">29.7</strong> — <span id="bmi-label">Overweight</span></div>
@@ -88,11 +97,15 @@
             <div style="display:flex;flex-direction:column;gap:10px">
               <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-secondary);border-radius:var(--radius-md)">
                 <span style="font-size:0.85rem;font-weight:500">😴 Rest Day</span>
-                <span style="font-weight:700;color:var(--accent-primary)" id="display-cal-rest">1,462 kcal</span>
+                <span style="font-weight:700;color:var(--accent-primary)" id="display-cal-rest">-- kcal</span>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-secondary);border-radius:var(--radius-md)">
-                <span style="font-size:0.85rem;font-weight:500">🏋️ Workout Day</span>
-                <span style="font-weight:700;color:var(--accent-primary)" id="display-cal-workout">2,034 kcal</span>
+                <span style="font-size:0.85rem;font-weight:500">🏃 Moderate</span>
+                <span style="font-weight:700;color:#F59E0B" id="display-cal-moderate">-- kcal</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-secondary);border-radius:var(--radius-md)">
+                <span style="font-size:0.85rem;font-weight:500">🏋️ Full Workout</span>
+                <span style="font-weight:700;color:#10B981" id="display-cal-workout">-- kcal</span>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-secondary);border-radius:var(--radius-md)">
                 <span style="font-size:0.85rem;font-weight:500">💧 Water Goal</span>
@@ -156,18 +169,51 @@
           </div>
 
           <div class="divider"></div>
-          <h4 style="margin-bottom:16px">🎯 Calorie Goals</h4>
+          <h4 style="margin-bottom:8px">🎯 Calorie Goals</h4>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px">
+            Based on your BMR, we auto-calculate your daily targets. Adjust the deficit/surplus below.
+          </p>
 
-          <div class="input-row">
-            <div class="form-group">
-              <label class="form-label">Rest Day (kcal)</label>
-              <input type="number" id="p-calories-rest" class="form-input" min="500" max="5000" placeholder="e.g. 1462"/>
+          <!-- Calorie Adjustment -->
+          <div class="card" style="background:var(--bg-secondary);border:none;padding:16px;margin-bottom:20px">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div>
+                <div style="font-weight:600;font-size:0.9rem" id="cal-adjust-label">📉 Daily Calorie Deficit</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:3px">How many kcal per day to cut/add from your TDEE</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <input type="number" id="p-cal-adjustment" class="form-input" min="0" max="1000" step="50"
+                  placeholder="e.g. 500" style="width:110px;text-align:center"/>
+                <span style="font-size:0.85rem;color:var(--text-muted)">kcal/day</span>
+              </div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Workout Day (kcal)</label>
-              <input type="number" id="p-calories-workout" class="form-input" min="500" max="6000" placeholder="e.g. 2034"/>
+            <div style="margin-top:12px;font-size:0.78rem;color:var(--text-muted)">
+              💡 Recommended: <strong>300–500 kcal</strong> deficit for fat loss · <strong>250–400 kcal</strong> surplus for muscle gain
             </div>
           </div>
+
+          <!-- Auto-calculated targets (read-only display + editable) -->
+          <div class="input-row" style="margin-bottom:12px">
+            <div class="form-group">
+              <label class="form-label">😴 Rest Day (kcal)</label>
+              <input type="number" id="p-calories-rest" class="form-input" min="500" max="5000" placeholder="Auto-calculated"/>
+              <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">BMR × 1.2 ± adjustment</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">🏃 Moderate Workout (kcal)</label>
+              <input type="number" id="p-calories-moderate" class="form-input" min="500" max="6000" placeholder="Auto-calculated"/>
+              <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">BMR × 1.55 ± adjustment</div>
+            </div>
+          </div>
+          <div class="form-group" style="max-width:50%">
+            <label class="form-label">🏋️ Full Workout (kcal)</label>
+            <input type="number" id="p-calories-workout" class="form-input" min="500" max="6000" placeholder="Auto-calculated"/>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">BMR × 1.725 ± adjustment</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="recalc-calories-btn" style="margin-bottom:8px">
+            🔄 Recalculate from BMR
+          </button>
+          <div id="macro-preview"></div>
 
           <div class="form-group">
             <label class="form-label">Daily Water Goal (ml)</label>
@@ -178,19 +224,73 @@
           <button class="btn btn-primary btn-lg w-full" id="save-profile-btn-bottom">💾 Save All Changes</button>
         </div>
       </div>
+
+      <!-- Admin Panel — only visible to nikhil -->
+      <div id="admin-panel" style="display:none;margin-top:24px">
+        <div class="card" style="border:2px solid var(--accent-primary)">
+          <!-- CSV Upload/Download section -->
+          <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border-color)">
+            <h4 style="margin-bottom:6px">📊 Global Food Database</h4>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px">Download as CSV, edit in Excel, upload to update for all users.</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-secondary" id="download-csv-btn">⬇️ Download CSV</button>
+              <label class="btn btn-secondary" style="cursor:pointer">
+                ⬆️ Upload CSV
+                <input type="file" id="upload-csv-input" accept=".csv" style="display:none"/>
+              </label>
+            </div>
+            <div id="csv-status" style="margin-top:10px;font-size:0.82rem;display:none"></div>
+          </div>
+          <!-- Migrate button (one-time) -->
+          <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border-color)">
+            <h4 style="margin-bottom:6px">🚀 Migrate Built-in Foods to Firebase</h4>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px">One-time action — pushes all default foods to Firebase global database.</p>
+            <button class="btn btn-primary" id="migrate-foods-btn">🚀 Migrate Now</button>
+            <div id="migrate-status" style="margin-top:10px;font-size:0.82rem;display:none"></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div>
+              <h3 style="color:var(--accent-primary)">🛡️ Admin Panel</h3>
+              <p style="font-size:0.82rem;color:var(--text-muted);margin-top:4px">Manage all registered users</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="refresh-users-btn">🔄 Refresh</button>
+          </div>
+          <div id="users-list" style="display:flex;flex-direction:column;gap:10px">
+            <div style="color:var(--text-muted);font-size:0.85rem">Loading users...</div>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 </div>
 
+
+<!-- Confirm Delete User Modal -->
+<div class="modal-overlay" id="confirm-delete-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">🗑️ Remove User</h3>
+      <button class="modal-close">✕</button>
+    </div>
+    <p style="margin:8px 0 20px;color:var(--text-secondary)">Are you sure you want to permanently remove:</p>
+    <div style="font-weight:700;font-size:1.05rem;margin-bottom:20px" id="delete-user-name"></div>
+    <p style="font-size:0.85rem;color:var(--error);margin-bottom:20px">⚠️ This will delete ALL their data permanently. This cannot be undone.</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary w-full" onclick="Modal.close('confirm-delete-modal')">Cancel</button>
+      <button class="btn btn-danger w-full" id="confirm-delete-btn">Yes, Remove User</button>
+    </div>
+  </div>
+</div>
 <div id="toast-container" class="toast-container"></div>
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
-<script src="js/app.js"></script>
-<script src="js/animations.js"></script>
-<script src="js/fooddata.js"></script>
-<script src="js/profile.js"></script>
+<script src="firebase-config.js"></script>
+  <script src="auth.js"></script>
+<script src="app.js"></script>
+<script src="animations.js"></script>
+<script src="fooddb.js"></script>
+<script src="profile.js"></script>
 <script>
   // Wire bottom save button to same handler
   document.addEventListener('DOMContentLoaded', async () => {
@@ -199,12 +299,51 @@
     // Update avatar initials
     const nameEl = document.getElementById('p-name');
     if (nameEl) nameEl.addEventListener('input', () => {
-      const parts = nameEl.value.trim().split(' ');
-      const initials = (parts[0]?.[0] || '') + (parts[1]?.[0] || '');
+      const parts = nameEl.value.trim().split(' ').filter(Boolean);
+      const initials = ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase();
       const av = document.getElementById('avatar-initials');
-      if (av) av.textContent = initials.toUpperCase() || 'NK';
+      if (av) av.textContent = initials || Auth.getCurrentUser()?.substring(0,2).toUpperCase() || 'NK';
     });
   });
 </script>
+
+<script>
+// Auth guard
+(function() {
+  const user = Auth.requireAuth();
+  if (!user) return;
+  // Show username in navbar
+  const el = document.createElement('span');
+  el.style.cssText = 'font-size:0.82rem;color:var(--text-muted);font-weight:600;padding:0 8px';
+  el.textContent = '👤 ' + user;
+  const actions = document.querySelector('.nav-actions');
+  if (actions) actions.insertBefore(el, actions.firstChild);
+})();
+</script>
+<!-- Bottom Nav (mobile) -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a href="dashboard.html" class="bottom-nav-item ">
+      <span class="bottom-nav-icon">📊</span>
+      <span class="bottom-nav-label">Dashboard</span>
+    </a>
+    <a href="foodlog.html" class="bottom-nav-item ">
+      <span class="bottom-nav-icon">🍽️</span>
+      <span class="bottom-nav-label">Food Log</span>
+    </a>
+    <a href="database.html" class="bottom-nav-item ">
+      <span class="bottom-nav-icon">🗄️</span>
+      <span class="bottom-nav-label">Database</span>
+    </a>
+    <a href="progress.html" class="bottom-nav-item ">
+      <span class="bottom-nav-icon">📈</span>
+      <span class="bottom-nav-label">Progress</span>
+    </a>
+    <a href="profile.html" class="bottom-nav-item active">
+      <span class="bottom-nav-icon">👤</span>
+      <span class="bottom-nav-label">Profile</span>
+    </a>
+  </div>
+</nav>
 </body>
 </html>

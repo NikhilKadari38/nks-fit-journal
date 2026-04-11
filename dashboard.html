@@ -4,8 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard — NK's Fit Journal</title>
-  <link rel="stylesheet" href="css/main.css"/>
-  <link rel="stylesheet" href="css/components.css"/>
+  <link rel="stylesheet" href="main.css"/>
+  <link rel="stylesheet" href="components.css"/>
   <style>
     .dashboard-grid { display:grid; grid-template-columns:1fr 340px; gap:24px; }
     .calorie-ring-wrap { display:flex; flex-direction:column; align-items:center; padding:28px; }
@@ -23,10 +23,34 @@
     .macro-gram { font-size:0.8rem; font-weight:600; }
     .log-scroll { max-height:380px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:4px 2px; }
     @media(max-width:900px) { .dashboard-grid{grid-template-columns:1fr} }
+    /* Smooth load */
+    .dashboard-content { opacity:0; transition:opacity 0.35s ease; }
+    .dashboard-content.ready { opacity:1; }
+    .page-loader { position:fixed;inset:0;z-index:9999;background:var(--bg-primary);display:flex;align-items:center;justify-content:center;transition:opacity 0.3s ease; }
+    .page-loader.hidden { opacity:0;pointer-events:none; }
+    .loader-spinner { width:36px;height:36px;border-radius:50%;border:3px solid var(--border-color);border-top-color:var(--accent-primary);animation:spin 0.7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+  <style>
+    .day-type-toggle { display:flex; gap:6px; }
+    .day-type-btn {
+      padding:8px 14px; border-radius:999px; border:1.5px solid var(--border-color);
+      background:var(--bg-card); color:var(--text-muted); font-size:0.82rem; font-weight:600;
+      cursor:pointer; transition:all 0.2s; white-space:nowrap;
+    }
+    .day-type-btn:hover { border-color:var(--accent-primary); color:var(--accent-primary); }
+    .day-type-btn.active { background:var(--accent-primary); color:white; border-color:var(--accent-primary); }
+    .day-type-btn[data-day="moderate"].active { background:#F59E0B; border-color:#F59E0B; }
+    .day-type-btn[data-day="full"].active { background:#10B981; border-color:#10B981; }
+    @media(max-width:500px) { .day-type-toggle { flex-wrap:wrap; } .day-type-btn { font-size:0.75rem; padding:6px 10px; } }
   </style>
 </head>
-<body>
+<body data-page="dashboard">
 <canvas id="bg-canvas"></canvas>
+<!-- Page loader — shown until data is ready -->
+<div class="page-loader" id="page-loader">
+  <div class="loader-spinner"></div>
+</div>
 <div class="site-wrapper">
   <nav class="navbar">
     <div class="navbar-inner">
@@ -44,6 +68,7 @@
       </ul>
       <div class="nav-actions">
         <button class="theme-toggle"><div class="theme-toggle-track"><div class="theme-toggle-thumb"><span class="theme-toggle-sun">☀️</span><span class="theme-toggle-moon">🌙</span></div></div></button>
+        <button class="btn-logout" onclick="Auth.logout()" title="Logout">🚪 Logout</button>
         <button class="nav-hamburger" id="nav-hamburger"><span></span><span></span><span></span></button>
       </div>
     </div>
@@ -60,7 +85,7 @@
   </div>
 
   <main>
-    <div class="container">
+    <div class="container dashboard-content" id="dashboard-content">
       <!-- Header -->
       <div class="page-header">
         <div>
@@ -77,16 +102,19 @@
       <!-- Workout Toggle -->
       <div class="workout-toggle-card mb-24 anim-fade-in">
         <div class="workout-toggle-info">
-          <span class="workout-toggle-icon">🏋️</span>
+          <span class="workout-toggle-icon" id="day-type-icon">😴</span>
           <div>
             <div class="workout-toggle-title">Day Type</div>
             <div class="workout-toggle-sub">Affects your daily calorie goal</div>
           </div>
         </div>
-        <div class="toggle-group">
-          <button class="toggle-btn" id="workout-toggle-btn" data-workout="false"><span id="workout-toggle-label">😴 Rest Day</span></button>
+        <div class="day-type-toggle" id="day-type-toggle">
+          <button class="day-type-btn active" data-day="rest">😴 Rest</button>
+          <button class="day-type-btn" data-day="moderate">🏃 Moderate</button>
+          <button class="day-type-btn" data-day="full">🏋️ Full</button>
         </div>
       </div>
+
 
       <div class="dashboard-grid">
         <!-- Left Column -->
@@ -98,32 +126,32 @@
               <div class="ring-container">
                 <canvas id="macro-canvas" width="200" height="200"></canvas>
                 <div class="ring-center">
-                  <div class="ring-cal" id="cal-eaten">0</div>
+                  <div class="ring-cal" id="cal-eaten"></div>
                   <div class="ring-label">kcal eaten</div>
                 </div>
               </div>
-              <div class="ring-goal">Goal: <span id="cal-goal-label">1,462</span> kcal &nbsp;|&nbsp; Remaining: <span id="cal-remaining">1,462</span> kcal</div>
+              <div class="ring-goal">Goal: <span id="cal-goal-label"></span> &nbsp;|&nbsp; <span id="cal-remaining"></span></div>
             </div>
             <!-- Macro Bars -->
             <div class="macro-section" style="border-top:1px solid var(--border-color);padding-top:20px">
               <div class="macro-item">
                 <div class="macro-header">
                   <span class="macro-name macro-protein">💪 Protein</span>
-                  <span class="macro-gram" id="val-protein" style="color:#3B82F6">0g / 136g</span>
+                  <span class="macro-gram" id="val-protein" style="color:#3B82F6"></span>
                 </div>
                 <div class="progress-wrap" style="height:8px"><div class="progress-bar dot-protein" id="bar-protein" style="width:0;height:100%"></div></div>
               </div>
               <div class="macro-item">
                 <div class="macro-header">
                   <span class="macro-name macro-carbs">⚡ Carbs</span>
-                  <span class="macro-gram" id="val-carbs" style="color:#A78BFA">0g / 138g</span>
+                  <span class="macro-gram" id="val-carbs" style="color:#A78BFA"></span>
                 </div>
                 <div class="progress-wrap" style="height:8px"><div class="progress-bar dot-carbs" id="bar-carbs" style="width:0;height:100%"></div></div>
               </div>
               <div class="macro-item" style="margin-bottom:0">
                 <div class="macro-header">
                   <span class="macro-name macro-fat">🔥 Fat</span>
-                  <span class="macro-gram" id="val-fat" style="color:#FB923C">0g / 41g</span>
+                  <span class="macro-gram" id="val-fat" style="color:#FB923C"></span>
                 </div>
                 <div class="progress-wrap" style="height:8px"><div class="progress-bar dot-fat" id="bar-fat" style="width:0;height:100%"></div></div>
               </div>
@@ -133,15 +161,15 @@
           <!-- Goal Progress -->
           <div class="goal-progress-wrap anim-fade-in">
             <div class="goal-row">
-              <span class="goal-label">🎯 Weight Goal Progress</span>
-              <span class="goal-pct" id="goal-pct">0% complete</span>
+              <span class="goal-label" id="goal-progress-label">🎯 Weight Goal Progress</span>
+              <span class="goal-pct" id="goal-pct"></span>
             </div>
             <div class="d-flex justify-between align-center mb-8">
-              <span style="font-size:0.82rem;color:var(--text-muted)" id="weight-lost">-- kg lost</span>
+              <span style="font-size:0.82rem;color:var(--text-muted)" id="weight-changed"></span>
               <div class="goal-weights">
-                <span class="goal-current" id="current-weight">76 kg</span>
+                <span class="goal-current" id="current-weight"></span>
                 <span class="goal-arrow"> → </span>
-                <span class="goal-target">65 kg</span>
+                <span class="goal-target" id="goal-target-weight"></span>
               </div>
             </div>
             <div class="progress-wrap goal-bar-wrap" style="height:12px">
@@ -162,25 +190,7 @@
         <!-- Right Column -->
         <div style="display:flex;flex-direction:column;gap:20px">
 
-          <!-- Stats -->
-          <div class="grid-2 stagger-children" style="gap:12px">
-            <div class="stat-card anim-fade-in">
-              <div class="stat-label">Protein</div>
-              <div class="stat-value macro-protein" data-macro="protein">0<span class="stat-unit">g</span></div>
-            </div>
-            <div class="stat-card anim-fade-in">
-              <div class="stat-label">Carbs</div>
-              <div class="stat-value macro-carbs" data-macro="carbs">0<span class="stat-unit">g</span></div>
-            </div>
-            <div class="stat-card anim-fade-in">
-              <div class="stat-label">Fat</div>
-              <div class="stat-value macro-fat" data-macro="fat">0<span class="stat-unit">g</span></div>
-            </div>
-            <div class="stat-card anim-fade-in">
-              <div class="stat-label">Goal</div>
-              <div class="stat-value" style="font-size:1.2rem;color:var(--accent-primary)" id="cal-goal-stat">1,462<span class="stat-unit">kcal</span></div>
-            </div>
-          </div>
+
 
           <!-- Water Tracker -->
           <div class="card anim-fade-in">
@@ -189,10 +199,10 @@
               <button class="btn btn-ghost btn-sm" id="water-reset">Reset</button>
             </div>
             <div class="water-glass-wrap">
-              <svg id="water-glass-svg" class="water-glass-svg" viewBox="0 0 52 84" width="52" height="84"></svg>
+              <svg id="water-glass-svg" class="water-glass-svg" viewBox="0 0 60 96" width="60" height="96"></svg>
               <div class="water-glass-info">
-                <div class="water-glass-ml" id="water-ml">0 ml</div>
-                <div class="water-glass-target" id="water-target">Goal: 3000 ml</div>
+                <div class="water-glass-ml" id="water-ml"></div>
+                <div class="water-glass-target" id="water-target"></div>
                 <div class="water-glass-btns">
                   <button class="water-add-btn" data-water-add="250">+250ml</button>
                   <button class="water-add-btn" data-water-add="500">+500ml</button>
@@ -230,10 +240,50 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
-<script src="js/app.js"></script>
-<script src="js/animations.js"></script>
-<script src="js/fooddata.js"></script>
-<script src="js/dashboard.js"></script>
+<script src="firebase-config.js"></script>
+  <script src="auth.js"></script>
+<script src="app.js"></script>
+<script src="animations.js"></script>
+<script src="fooddb.js"></script>
+<script src="dashboard.js"></script>
+
+<script>
+// Auth guard
+(function() {
+  const user = Auth.requireAuth();
+  if (!user) return;
+  // Show username in navbar
+  const el = document.createElement('span');
+  el.style.cssText = 'font-size:0.82rem;color:var(--text-muted);font-weight:600;padding:0 8px';
+  el.textContent = '👤 ' + user;
+  const actions = document.querySelector('.nav-actions');
+  if (actions) actions.insertBefore(el, actions.firstChild);
+})();
+</script>
+<!-- Bottom Nav (mobile) -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a href="dashboard.html" class="bottom-nav-item active">
+      <span class="bottom-nav-icon">📊</span>
+      <span class="bottom-nav-label">Dashboard</span>
+    </a>
+    <a href="foodlog.html" class="bottom-nav-item ">
+      <span class="bottom-nav-icon">🍽️</span>
+      <span class="bottom-nav-label">Food Log</span>
+    </a>
+    <a href="database.html" class="bottom-nav-item ">
+      <span class="bottom-nav-icon">🗄️</span>
+      <span class="bottom-nav-label">Database</span>
+    </a>
+    <a href="progress.html" class="bottom-nav-item ">
+      <span class="bottom-nav-icon">📈</span>
+      <span class="bottom-nav-label">Progress</span>
+    </a>
+    <a href="profile.html" class="bottom-nav-item ">
+      <span class="bottom-nav-icon">👤</span>
+      <span class="bottom-nav-label">Profile</span>
+    </a>
+  </div>
+</nav>
 </body>
 </html>

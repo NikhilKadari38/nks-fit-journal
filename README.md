@@ -1,6 +1,6 @@
 # 🏋️ NK's Fit Journal
 
-> A personal calorie tracking & weight loss journal — built for Nikhil, usable by anyone.
+> A personal fitness & nutrition tracker — built for anyone who wants to lose weight, gain weight, or maintain. Track calories, macros, water, and your journey.
 
 **Live URL:** `https://NikhilKadari38.github.io/nks-fit-journal`
 
@@ -10,135 +10,141 @@
 
 ```
 nks-fit-journal/
-├── index.html          ← Landing page (constellation animation)
-├── dashboard.html      ← Daily summary, water, workout toggle
-├── foodlog.html        ← Add food entries freely throughout the day
-├── database.html       ← Browse & add custom foods
-├── progress.html       ← Charts: weight, calories, macros, streak
-├── profile.html        ← Personal stats & settings
-├── css/
-│   ├── main.css        ← Global styles, CSS variables, light/dark themes
-│   └── components.css  ← Navbar, buttons, cards, all UI components
-├── js/
-│   ├── firebase-config.js  ← Storage layer (localStorage now, Firebase later)
-│   ├── app.js              ← Theme toggle, navbar, toast, modal, utilities
-│   ├── animations.js       ← 6 unique canvas background animations
-│   ├── fooddata.js         ← 75+ food database + FoodDB utility functions
-│   ├── dashboard.js        ← Dashboard logic
-│   ├── foodlog.js          ← Food log logic
-│   ├── database.js         ← Database page logic
-│   ├── progress.js         ← Chart.js charts logic
-│   └── profile.js          ← Profile save/load logic
-└── README.md
+├── index.html              ← Landing page (constellation animation)
+├── dashboard.html          ← Daily summary, macros, water, day type toggle
+├── foodlog.html            ← Log food entries, browse previous days
+├── database.html           ← Browse & quick-log foods, add custom items
+├── progress.html           ← Charts: weight, calories, macros, streak
+├── profile.html            ← Personal stats, goals, calorie targets
+├── login.html              ← Sign in / Create account
+├── main.css                ← Global styles, CSS variables, light/dark themes
+├── components.css          ← Navbar, buttons, cards, all UI components
+├── firebase-config.js      ← Firebase + NKStorage (multi-user data layer)
+├── auth.js                 ← Custom username/password auth system
+├── app.js                  ← Theme, nav, toast, modal, utilities, side figures
+├── animations.js           ← 6 unique canvas background animations per page
+├── fooddb.js               ← 91+ food database + FoodDB utility functions (Firebase-backed)
+├── dashboard.js            ← Dashboard logic
+├── foodlog.js              ← Food log + date navigation logic
+├── database.js             ← Database page logic
+├── progress.js             ← Chart.js charts logic
+└── profile.js              ← Profile save/load + BMR auto-calc logic
 ```
 
 ---
 
-## 🚀 How to Deploy to GitHub Pages
+## ✨ Features
 
-### Step 1 — Create GitHub Repository
-1. Go to [github.com](https://github.com) → Sign in
-2. Click **"New repository"** (green button)
-3. Name it exactly: `nks-fit-journal`
-4. Set to **Public**
-5. Click **"Create repository"**
+### 👤 Multi-User Auth
+- Custom **username + password** login — no email required
+- Passwords hashed with **SHA-256 + salt + pepper** via Web Crypto API
+- Sessions expire after **72 hours**
+- Each user's data is fully **isolated** in Firebase under their username
+- Admin account (`nikhil`) can view all users and delete accounts
+- Deleted users are **instantly kicked out** on next page load
 
-### Step 2 — Upload Your Files
-**Option A: Upload via browser (easiest)**
-1. Open your new repo
-2. Click **"uploading an existing file"**
-3. Drag and drop ALL files and folders
-4. Click **"Commit changes"**
+### 🎯 Goal-Aware Dashboard
+- Set your current weight and goal weight — app auto-detects your goal:
+  - Current > Goal → 📉 Weight Loss mode
+  - Current < Goal → 📈 Weight Gain mode
+  - Current = Goal → ⚖️ Maintain mode
+- **3-state day type toggle:** 😴 Rest · 🏃 Moderate · 🏋️ Full Workout
+- Calorie ring, macro bars, goal progress bar all update live per day type
 
-**Option B: Git command line**
+### 🧮 Smart BMR & Calorie Calculator
+- BMR calculated using Mifflin-St Jeor formula
+- 3 calorie targets auto-calculated on profile save or weight log:
+  - 😴 Rest Day = BMR × 1.2 ± adjustment
+  - 🏃 Moderate = BMR × 1.55 ± adjustment
+  - 🏋️ Full Workout = BMR × 1.725 ± adjustment
+- Logging weight on dashboard automatically recalculates and saves everything
+
+### 📊 Dynamic Macro Targets
+Macros split from calorie goal based on your goal type:
+
+| Goal | Protein | Fat | Carbs |
+|---|---|---|---|
+| 📉 Lose | 35% | 25% | 40% |
+| 📈 Gain | 25% | 25% | 50% |
+| ⚖️ Maintain | 30% | 25% | 45% |
+
+### 🍽️ Food Log
+- Log food freely with timestamps — no meal categories
+- Browse **previous days** with arrow navigation or calendar picker
+- Totals strip: calories, protein, carbs, fat for any selected day
+
+### 🗄️ Food Database
+- **91+ foods** — Indian + international, veg + non-veg
+- Clickable stat cards filter by Veg / Non-Veg / Custom
+- Quick-log directly from the database page
+- Add unlimited custom foods (saved to your account only)
+
+### 🎨 Design & UX
+- Light / Dark mode — consistent font in both modes
+- **Side body figures** in page margins, goal-aware:
+  - 📉 Lose: 🫃 Now → 🏃 Goal
+  - 📈 Gain: 🧎 Now → 🏋️ Goal
+  - 🎉 Goal reached: same emoji on both sides!
+- Smooth page load with spinner — no value flickering
+- Fully responsive — mobile, tablet, desktop
+- Date tracking uses **browser local time** — correct for any country worldwide
+
+---
+
+## 🚀 Deployment
+
+### Push updates
+```bash
+git add .
+git commit -m "describe your changes"
+git push
+```
+
+### First time setup
 ```bash
 git init
-git add .
-git commit -m "Initial commit — NK's Fit Journal"
-git branch -M main
 git remote add origin https://github.com/NikhilKadari38/nks-fit-journal.git
-git push -u origin main
+git add .
+git commit -m "Initial commit"
+git push -u origin master
+```
+Then go to repo **Settings → Pages → Deploy from branch → master**.
+
+---
+
+## 🔥 Firebase Structure
+
+```
+auth/users/accounts/{username}/     ← auth record
+userData/{username}/meta/           ← profile, settings
+userData/{username}/foodlogs/       ← daily food entries
+userData/{username}/weights/        ← daily weight logs
+userData/{username}/water/          ← daily water intake
 ```
 
-### Step 3 — Enable GitHub Pages
-1. Go to your repo → **Settings** tab
-2. Scroll to **Pages** in the left sidebar
-3. Under **Source** → select **"Deploy from a branch"**
-4. Branch: **main** | Folder: **/ (root)**
-5. Click **Save**
-6. Wait 2–3 minutes → your site is live at:
-   **`https://NikhilKadari38.github.io/nks-fit-journal`**
+---
+
+## 👤 Admin Panel
+
+Admin username: `nikhil` (set in `auth.js`). Admin powers:
+- View all registered users with join date and last login
+- Delete any user and all their data instantly
+- Deleted users are redirected to login on their next page load with a message
 
 ---
 
-## 🔥 Connect Firebase (for cloud data sync)
+## 📝 Tech Stack
 
-Right now the app uses your browser's localStorage — data is saved locally on your device.
-To sync data across devices, connect Firebase:
-
-### Step 1 — Create Firebase Project
-1. Go to [firebase.google.com](https://firebase.google.com)
-2. Click **"Get Started"** → **"Add project"**
-3. Name: `nks-fit-journal` → Continue
-4. Disable Google Analytics (not needed) → **Create project**
-
-### Step 2 — Add Web App
-1. Click the **Web icon** (`</>`)
-2. App nickname: `nks-fit-journal`
-3. Click **"Register app"**
-4. Copy the `firebaseConfig` object
-
-### Step 3 — Enable Firestore
-1. Left sidebar → **Build → Firestore Database**
-2. Click **"Create database"**
-3. Choose **"Start in test mode"** → Next → Done
-
-### Step 4 — Update Your Code
-Open `js/firebase-config.js` and:
-1. Replace all `"YOUR_..."` values with your real Firebase config
-2. Change `const USE_FIREBASE = false;` to `const USE_FIREBASE = true;`
-3. Push to GitHub
-
----
-
-## 🎨 Features
-
-| Feature | Details |
+| Layer | Technology |
 |---|---|
-| 🌙 Dark / Light mode | VSCode dark ↔ Netflix warm white |
-| 🎬 Unique animations | 6 different canvas animations per page |
-| 🍽️ Food Log | Free-add any time, auto macro calc from grams |
-| 🗄️ Food Database | 75+ foods (veg + non-veg), add custom foods |
-| 📊 Charts | Weight line, calorie bar, macro donut, streak calendar |
-| 💧 Water tracker | Animated filling glass, add 250ml / 500ml |
-| 🎯 Goal progress | Live progress bar from 76kg → 65kg |
-| 🏋️ Workout toggle | Switches calorie goal: 1,462 ↔ 2,034 kcal |
-| 📱 Responsive | Works on mobile, tablet, desktop |
+| Hosting | GitHub Pages |
+| Backend / DB | Firebase Firestore (europe-west3) |
+| Auth | Custom SHA-256 + Web Crypto API |
+| Charts | Chart.js (CDN) |
+| Fonts | Playfair Display, DM Sans |
+| Animations | Vanilla Canvas API |
+| Framework | None — pure HTML, CSS, JavaScript |
 
 ---
 
-## 👤 Default Profile (Nikhil Kadari)
-
-| Stat | Value |
-|---|---|
-| Age | 26 years |
-| Weight | 76 kg |
-| Height | 5'3" (160 cm) |
-| Goal Weight | 65 kg |
-| BMR | 1,635 kcal |
-| Rest Day Target | 1,462 kcal |
-| Workout Day Target | 2,034 kcal |
-| Water Goal | 3,000 ml/day |
-
----
-
-## 📝 Notes
-
-- Data is stored in your **browser's localStorage** until Firebase is connected
-- Clearing browser data will erase logs — connect Firebase for permanent storage
-- The app works fully offline for reading; adding data requires the page to be open
-- All macro data is per 100g/100ml based on standard nutritional databases
-
----
-
-*Built with ❤️ for Nikhil's fitness journey — 76kg → 65kg 💪*
+*Built with ❤️ for anyone on a fitness journey 💪*
